@@ -1,0 +1,66 @@
+#adapter from hertz_axi by Martin Kraska 
+#[github.com/mkraska/CalculiX-Examples/tree/master/Contact/Hertz_axi]
+valu radius 5
+valu height 24
+valu width 20
+
+seto sphere
+pnt p1 0 radius 0
+pnt p2 0 0 0
+pnt p3 radius radius 0
+line peri p2 p3 p1 60 1.05
+line l1 p2 p1 40 1.05
+line l2 p3 p1 20 1
+surf s1 l2 peri l1
+move all tra 0 0.1 0
+setc sphere
+
+seto block
+pnt p4 0 0 0
+valu neg -1
+valu neg_height * neg height
+swep block block tra 0 neg_height 0 80
+bia block 32
+swep block block tra width 0 0 60
+seta lb l L003 L004
+bia block 16
+
+move all tra 0 height 0
+
+flip all
+elty all qu8c
+mesh all
+move block tra 1e-3 0 0
+send all abq
+send sphere abq nam
+send block abq nam
+
+rot -z
+view elem
+frame
+
+SETA speri l peri
+comp speri do
+comp speri do
+send speri abq sur
+send speri abq nam
+
+seta sblk l L003
+comp sblk do
+comp sblk do
+send sblk abq sur
+
+seta x0 l L001 l1
+comp x0 do
+comp x0 do
+send x0 abq nam
+
+seta y0 l L004
+comp y0 do
+comp y0 do
+send y0 abq nam
+
+seta control l l2
+comp control do
+comp control do
+send control abq nam

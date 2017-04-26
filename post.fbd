@@ -1,0 +1,6 @@
+read mrn.frd
+rot -z
+ds 2 e 7
+view disp
+plot fv all
+frame
