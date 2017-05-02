@@ -5,8 +5,7 @@ Project title: "Determining the stress-strain curve of aluminium using an indend
 
 To be used with CalculiX 2.11 (with GraphiX). 
 
-*.fbd files are cgx scripts, used to generate the geometry and mesh, and to easily view the results in cgx.
+```mrn.py``` the primary script for running simulations. The other Python files are libraries for functions to pre-, and post-process the files, as well as generate any inputs. Must be executed using bConverge's CalculiX Command cmd, or ```run_ccx``` in mrn.py should be modified appropriately. 
 
-mrn.py the primary script for running simulations.
 
-The remainging *.py files are Python scripts, used to generate ccx input files, and to post-process data.
+```*.fbd``` files are cgx scripts, which used to generate the geometry and mesh, and to easily view the results in cgx.
