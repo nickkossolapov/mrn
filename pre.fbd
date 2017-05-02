@@ -1,5 +1,6 @@
-#adapter from hertz_axi by Martin Kraska 
+#adapted from hertz_axi by Martin Kraska 
 #[github.com/mkraska/CalculiX-Examples/tree/master/Contact/Hertz_axi]
+
 valu radius 5
 valu height 24
 valu width 20
@@ -39,7 +40,7 @@ rot -z
 view elem
 frame
 
-SETA speri l peri
+seta speri l peri
 comp speri do
 comp speri do
 send speri abq sur
