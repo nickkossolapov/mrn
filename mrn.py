@@ -17,6 +17,8 @@ def main():
         delete_ccx_files(name)
         disp, force = post.get_data(name)
         plt.plot(disp, force)
+        
+    plt.legend(n)
     plt.show()
 
 
