@@ -1,19 +1,18 @@
 from string import Template
 
-def make_inp(num, params):
-    """Usage: string num, list stresses, list strains
+def make_inp(file_name, stresses, strains, params):
+    """Usage: string file_name, list stresses, list strains
     
     params requires a dictionary containing:
-    float mid_time, float end_time, float amplitude"""
+    "mid_time": float, "end_disp": float, "amplitude": float"""
 
     plastic = _parse_p_vals(stresses, strains)
     filein = open("inp_template.txt", 'r')
     src = Template(filein.read())
+    params['plastic'] = plastic
+    result = src.substitute(params)
 
-    d = {'plastic': plastic, 'mid_time': mid_time, 'end_disp': end_disp, 'amplitude': amplitude}
-    result = src.substitute(d)
-
-    fileout = open('mrn{}.inp'.format(num), 'w')
+    fileout = open(file_name, 'w')
     fileout.write(result)
 
     filein.close()

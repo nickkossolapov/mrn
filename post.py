@@ -1,42 +1,28 @@
 import sys
 import matplotlib.pyplot as plt
 
-def get_fd_data(file_name):
+def get_data(file_name):
     """Usage: string file_name
     
     Output: list displacements, list forces"""
+    _name = file_name[:-4] + ".dat"
 
-    fd_data_file = open(file_name, "r")
-    times, forces = _get_data(fd_data_file)
-    displacements = [_get_displacement(i, 1.8, 0.7, 0.9) for i in times]
+    try:
+        fd_data_file = open("./data/" + _name, "r")
+    except Exception:
+        print("Cannot open data file") 
+        quit()
+
+    times, forces = _parse_data(fd_data_file)
+    disps = [_get_disp(i, 1.8, 0.7, 0.9) for i in times]
     
-    if len(forces) != len(displacements):
+    if len(forces) != len(disps):
         print("Forces and displacements don't have the same length")
         quit()
 
-    return displacements, forces
+    return disps, forces
 
-def _open_file():
-    """Adapted from CalcluliX examples scripts by Martin Kraska github.com/mkraska/CalculiX-Examples/"""
-
-    if len(sys.argv)==1:
-        print("No jobname given.")
-        files=glob.glob("*.dat")
-        if len(files)==1:
-            print("Found", files[0])
-            job=files[0]
-        else:
-            print("Available data files:")
-            for f in files:
-                print("  ", f)
-            quit()
-    if len(sys.argv)>1:
-        print("Jobname:",sys.argv[1])
-        job = sys.argv[1]+".dat"
-
-    return open(job,"r")
-
-def _get_data(file):
+def _parse_data(file):
     times = []
     forces = []
 
@@ -49,10 +35,10 @@ def _get_data(file):
          
     return times, forces    
 
-def _get_displacement(time, amplitude, mid_time, end_disp):
+def _get_disp(time, amplitude, mid_time, end_disp):
     if time <= mid_time:    
-        displacement = time * amplitude / mid_time
+        disp = time * amplitude / mid_time
     elif time > mid_time:
-        displacement = amplitude + (time - mid_time) * ((end_disp - amplitude)/(1 - mid_time))
+        disp = amplitude + (time - mid_time) * ((end_disp - amplitude)/(1 - mid_time))
 
     return displacement
