@@ -9,15 +9,15 @@ def main():
     ccx_params = {"mid_time": 0.7, "end_disp": 0.9, "amplitude": -1.8}
     n = [0.01, 0.02, 0.03, 0.04, 0.05]
     for i in range(5):
-        stresses, strains = get_plasticity(n)
-        name = make_file_name(9)
+        stresses, strains = plasticity.get_plasticity(n[i])
+        name = make_file_name(i)
         pre.make_inp(name, stresses, strains, ccx_params)
         run_ccx(name) 
         move_data(name)
         delete_ccx_files(name)
         disp, force = post.get_data(name)
         plt.plot(disp, force)
-        
+
     plt.legend(n)
     plt.show()
 
