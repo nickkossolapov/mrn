@@ -1,17 +1,23 @@
 import sys
 import matplotlib.pyplot as plt
 
-def main():
-    fd_data = open("mrn.dat", "r")
-    times, forces = get_data(fd_data)
-    displacements = [get_displacement(i, 1.8, 0.7, 0.9) for i in times]
-    plt.plot(displacements, forces)
-    plt.show()
-
-def open_file():
-    """Reads system arguments and parses them appropriately. 
+def get_fd_data(file_name):
+    """Usage: string file_name
     
-    Adapted from CalcluliX examples scripts by Martin Kraska github.com/mkraska/CalculiX-Examples/"""
+    Output: list displacements, list forces"""
+
+    fd_data_file = open(file_name, "r")
+    times, forces = _get_data(fd_data_file)
+    displacements = [_get_displacement(i, 1.8, 0.7, 0.9) for i in times]
+    
+    if len(forces) != len(displacements):
+        print("Forces and displacements don't have the same length")
+        quit()
+
+    return displacements, forces
+
+def _open_file():
+    """Adapted from CalcluliX examples scripts by Martin Kraska github.com/mkraska/CalculiX-Examples/"""
 
     if len(sys.argv)==1:
         print("No jobname given.")
@@ -30,11 +36,7 @@ def open_file():
 
     return open(job,"r")
 
-def get_data(file):
-    """Returns the force data and the displacement data in the input file.
-    
-    Multiplies forces in files by -180, as per CalculiX axisymmetric elements"""
-
+def _get_data(file):
     times = []
     forces = []
 
@@ -47,15 +49,10 @@ def get_data(file):
          
     return times, forces    
 
-def get_displacement(time, amplitude, mid_time, end_disp):
-    """Returns a displacement at a set time for a 1 second interval."""
-
+def _get_displacement(time, amplitude, mid_time, end_disp):
     if time <= mid_time:    
         displacement = time * amplitude / mid_time
     elif time > mid_time:
         displacement = amplitude + (time - mid_time) * ((end_disp - amplitude)/(1 - mid_time))
 
     return displacement
-
-if __name__ == "__main__":
-    main()

@@ -1,0 +1,39 @@
+*INCLUDE, input=all.msh
+*INCLUDE, input=sblk.sur
+*INCLUDE, input=sblk.nam
+*INCLUDE, input=speri.sur
+*INCLUDE, input=x0.nam
+*INCLUDE, input=y0.nam
+*INCLUDE, input=block.nam
+*INCLUDE, input=sphere.nam
+*INCLUDE, input=control.nam
+
+
+*BOUNDARY
+Nx0,1,,0
+Ny0,2,,0
+*MATERIAL,NAME=steel
+*ELASTIC
+2.1e5,0.3
+*MATERIAL, NAME=aluminium
+*ELASTIC
+7e4,0.33
+*PLASTIC
+$plastic
+*SOLID SECTION, ELSET=Esphere, MATERIAL=steel
+*SOLID SECTION, ELSET=Eblock, MATERIAL=aluminium
+*SURFACE INTERACTION, NAME=contact
+*SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=linear
+2.1e6
+*CONTACT PAIR, INTERACTION=contact, TYPE=SURFACE TO SURFACE
+Ssblk, Ssperi
+*AMPLITUDE, NAME=A1
+0.0, 0.0, $mid_time, 1.0, 1.0, $end_disp 
+*STEP, NLGEOM, INC=5000
+*STATIC
+0.001, 1, 0.001, 0.01
+*BOUNDARY, AMPLITUDE=A1
+NControl, 2, 2, $amplitude
+*Node print, NSET=NControl, totals=only
+RF
+*END STEP
