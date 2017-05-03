@@ -12,6 +12,7 @@
 *.csv
 *.fbb
 *.pyc
+*data/
 /.matplotlib/
 /__pychache__/
 /data/
