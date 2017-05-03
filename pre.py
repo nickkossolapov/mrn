@@ -6,7 +6,7 @@ def make_inp(file_name, stresses, strains, params):
     params requires a dictionary containing:
     "mid_time": float, "end_disp": float, "amplitude": float"""
 
-    plastic = _parse_p_vals(stresses, strains)
+    plastic = _parse_p_vals(stresses, strains, file_name)
     filein = open("inp_template.txt", 'r')
     src = Template(filein.read())
     params['plastic'] = plastic
@@ -20,9 +20,9 @@ def make_inp(file_name, stresses, strains, params):
     return 1
 
 
-def _parse_p_vals(stresses, strains):
+def _parse_p_vals(stresses, strains, file_name):
     if (len(stresses) != len(strains)):
-        print("Stresses and strains don't have the same length")
+        print("Stresses and strains for {} don't have the same length".format(file_name))
         quit()
 
     p_string = []
