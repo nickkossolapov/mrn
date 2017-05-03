@@ -1,7 +1,7 @@
 from string import Template
 
 def make_inp(file_name, stresses, strains, params):
-    """Usage: string file_name, list stresses, list strains
+    """Usage: string file_name, list stresses, list strains, dict params
 
     params requires a dictionary containing:
     "mid_time": float, "end_disp": float, "amplitude": float"""
