@@ -21,7 +21,7 @@ def make_inp(file_name, stresses, strains, params):
 
 
 def _parse_p_vals(stresses, strains, file_name):
-    if (len(stresses) != len(strains)):
+    if len(stresses) != len(strains):
         print("Stresses and strains for {} don't have the same length".format(file_name))
         quit()
 
@@ -29,7 +29,7 @@ def _parse_p_vals(stresses, strains, file_name):
     for i in range(len(stresses)):
         p_string.append('{}, {}'.format(stresses[i], strains[i]))
         p_string.append('\n')
-    
+
     p_string.pop()
-    
+
     return ''.join(p_string)
