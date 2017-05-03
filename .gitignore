@@ -1,14 +1,14 @@
-# CalculiX generated files
-.cvg
-.frd
-.sta
-.msh
-.nam
-.dlo
-.sur
-.out
-.dat
-.inp
-.matplotlib/
-__pychache__/
-data/
+#ingore ccx output files
+*.cvg
+*.frd
+*.sta
+*.msh
+*.nam
+*.dlo
+*.sur
+*.out
+*.dat
+*.inp
+/.matplotlib/
+/__pychache__/
+/data/
