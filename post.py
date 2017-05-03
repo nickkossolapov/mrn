@@ -5,19 +5,19 @@ def get_data(file_name):
     """Usage: string file_name
     
     Returns: list displacements, list forces"""
-    _name = file_name[:-4] + ".dat"
+    name = file_name[:-4] + ".dat"
 
     try:
-        fd_data_file = open("./data/" + _name, "r")
+        fd_data_file = open("./data/" + name, "r")
     except Exception:
-        print("Cannot open data file") 
+        print("Cannot open {}.".format(file_name)) 
         quit()
 
     times, forces = _parse_data(fd_data_file)
     disps = [_get_disp(i, 1.8, 0.7, 0.9) for i in times]
     
     if len(forces) != len(disps):
-        print("Forces and displacements don't have the same length in file", file_name)
+        print("Forces and displacements don't have the same length in {}.".format(file_name))
         quit()
 
     return disps, forces
