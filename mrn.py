@@ -4,31 +4,33 @@ import csv
 import datetime
 import matplotlib.pyplot as plt
 import numpy as np
-import pre
-import post
-import plasticity
+from pre import make_inp
+from post import get_data
+from plasticity import get_plasticity
 
 def main():
-    ccx_params = {"mid_time": 0.6, "end_disp": 0.9, "amplitude": -1.545}
-    n = np.linspace(0.0005, 0.005, 3)
+    ccx_params = {"mid_time": 0.6, "end_disp": 0.9, "amplitude": -1.549}
+    # n = np.linspace(.14, 0.141666666667, 3)
+    n = [0.142]
     legend = []
 
     for i in range(len(n)):
         name = _make_file_name(i)
-        stresses, strains = plasticity.get_plasticity(n[i])
+        stresses, strains = get_plasticity(n[i])
         run_simulation(name, stresses, strains, ccx_params)
-        disp, force = post.get_data(name, ccx_params)
+        disp, force = get_data(name, ccx_params)
         plt.plot(disp, force)
-        legend.append(str(i))
+        legend.append(str(n[i]))
+
+    print("\nSimulations done.")
 
     av_h, av_f = get_average_data()
-    legend.append("Average")
     plt.plot(av_h, av_f)
     plt.legend(legend)
     plt.show()
 
 def run_simulation(file_name, stresses, strains, params):
-    pre.make_inp(file_name, stresses, strains, params)
+    make_inp(file_name, stresses, strains, params)
     _run_ccx(file_name)
     _move_data(file_name)
     _delete_ccx_files(file_name)
@@ -55,10 +57,10 @@ def _run_ccx(file_name):
     command = "ccx {} >nul".format(no_ext_name)
 
     start_time = datetime.datetime.now()
-    print("Started execution of {} at {}".format(file_name, start_time.strftime("%H:%M:%S")))
+    print("\nStarted execution of {} at {}".format(file_name, start_time.strftime("%H:%M:%S")))
     system(command)
     run_time = (datetime.datetime.now()-start_time).__str__()
-    print("Execution of {} finished with runtime of {}.\n".format(file_name, run_time))
+    print("Execution of {} finished with runtime of {}.".format(file_name, run_time))
 
     return 1
 

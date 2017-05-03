@@ -2,12 +2,14 @@ def get_data(file_name, params):
     """Usage: string file_name
 
     Returns: list displacements, list forces"""
-    name = file_name[:-4] + ".dat"
 
+    name = file_name[:-4] + ".dat"
     fd_data_file = open("./data/" + name, "r")
+
     amplitude = -params["amplitude"]
     mid_time = params["mid_time"]
     end_disp = params["end_disp"]
+
     times, forces = _parse_data(fd_data_file)
     disps = [_get_disp(i, amplitude, mid_time, end_disp) for i in times]
 
