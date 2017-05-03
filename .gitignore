@@ -9,6 +9,9 @@
 *.out
 *.dat
 *.inp
+*.csv
+*.fbb
+*.pyc
 /.matplotlib/
 /__pychache__/
 /data/
