@@ -1,41 +1,47 @@
-import pre, post, plasticity
 from os import system
 import glob
-import matplotlib.pyplot as plt
 import csv
-import numpy as np
 import datetime
+import matplotlib.pyplot as plt
+import numpy as np
+import pre
+import post
+import plasticity
 
 def main():
-    ccx_params = {"mid_time": 0.7, "end_disp": 0.9, "amplitude": -1.8}
-    n = np.linspace(0.00005, 0.005, 50)
+    ccx_params = {"mid_time": 0.6, "end_disp": 0.9, "amplitude": -1.545}
+    n = np.linspace(0.0005, 0.005, 3)
+    legend = []
 
     for i in range(len(n)):
-        name = make_file_name(i)
+        name = _make_file_name(i)
         stresses, strains = plasticity.get_plasticity(n[i])
         run_simulation(name, stresses, strains, ccx_params)
-        disp, force = post.get_data(name)
+        disp, force = post.get_data(name, ccx_params)
         plt.plot(disp, force)
+        legend.append(str(i))
 
     av_h, av_f = get_average_data()
+    legend.append("Average")
     plt.plot(av_h, av_f)
+    plt.legend(legend)
     plt.show()
 
 def run_simulation(file_name, stresses, strains, params):
-    pre.make_inp(name, stresses, strains, params)
-    _run_ccx(file_name) 
+    pre.make_inp(file_name, stresses, strains, params)
+    _run_ccx(file_name)
     _move_data(file_name)
     _delete_ccx_files(file_name)
 
 
 def get_average_data():
     datafile = open('data.csv', 'r')
-    reader = csv.reader(_datafile, delimiter=',')
+    reader = csv.reader(datafile, delimiter=',')
     _av_h = []
     _av_f = []
 
     first_row = True
-    for row in _reader:
+    for row in reader:
         if first_row:
             first_row = False
             continue
@@ -47,16 +53,15 @@ def get_average_data():
 def _run_ccx(file_name):
     no_ext_name = file_name[:-4]
     command = "ccx {} >nul".format(no_ext_name)
-    try:
-        time = datetime.datetime.now().strftime("%H:%M:%S")
-        print("Started execution of {} at \t{}".format(file_name, time))
-        system(command)
-        time = datetime.datetime.now().strftime("%H:%M:%S")
-        print("Execution of {} finished at \t{}.".format(file_name, time)))
-        return 1
-    except Exception:
-        print("Something went wrong executing {}.".format(file_name))
-        return -1
+
+    start_time = datetime.datetime.now()
+    print("Started execution of {} at {}".format(file_name, start_time.strftime("%H:%M:%S")))
+    system(command)
+    run_time = (datetime.datetime.now()-start_time).__str__()
+    print("Execution of {} finished with runtime of {}.\n".format(file_name, run_time))
+
+    return 1
+
 
 def _make_file_name(num):
     preceding_zeros = 3
@@ -67,7 +72,7 @@ def _move_data(file_name):
     name = file_name[:-4] + ".dat"
     command = 'move {} ./data/{}'.format(name, name)
 
-    system command)
+    system(command)
     return 1
 
 def _delete_ccx_files(file_name):
@@ -75,7 +80,7 @@ def _delete_ccx_files(file_name):
     files = glob.glob(no_ext_name + "*")
 
     for file in files:
-        command = "del /F " + file
+        command = "del " + file
         system(command)
     return 1
 
