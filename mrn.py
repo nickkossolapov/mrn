@@ -7,6 +7,7 @@ import numpy as np
 from pre import make_inp
 from post import get_data
 from plasticity import get_plasticity
+<<<<<<< HEAD
 
 # n = [0.142] is solution!
 
@@ -19,6 +20,29 @@ def main():
         stresses, strains = get_plasticity(inputs[i])
         run_simulation(name, stresses, strains, ccx_params)
         disp, force = get_data(name, ccx_params)
+=======
+
+def main():
+    ccx_params = {"mid_time": 0.6, "end_disp": 0.9, "amplitude": -1.549}
+    # n = np.linspace(.14, 0.141666666667, 3)
+    n = [0.142]
+    legend = []
+
+    for i in range(len(n)):
+        name = _make_file_name(i)
+        stresses, strains = get_plasticity(n[i])
+        run_simulation(name, stresses, strains, ccx_params)
+        disp, force = get_data(name, ccx_params)
+        plt.plot(disp, force)
+        legend.append(str(n[i]))
+
+    print("\nSimulations done.")
+
+    av_h, av_f = get_average_data()
+    plt.plot(av_h, av_f)
+    plt.legend(legend)
+    plt.show()
+>>>>>>> bea2cf4a5adf3864a3ae8c7bab3e7fc994e1c8a7
 
 def run_simulation(file_name, stresses, strains, params):
     make_inp(file_name, stresses, strains, params)
@@ -57,7 +81,11 @@ def _run_ccx(file_name):
     run_time = (datetime.datetime.now()-start_time).__str__()
     print("Execution of {} finished with runtime of {}.".format(file_name, run_time))
 
+<<<<<<< HEAD
     return 0
+=======
+    return 1
+>>>>>>> bea2cf4a5adf3864a3ae8c7bab3e7fc994e1c8a7
 
 
 def _make_file_name(num):
@@ -72,7 +100,12 @@ def _move_data(file_name):
     command = 'move {} ./data/{}'.format(name, name)
     system(command)
 
+<<<<<<< HEAD
     return 0
+=======
+    system(command)
+    return 1
+>>>>>>> bea2cf4a5adf3864a3ae8c7bab3e7fc994e1c8a7
 
 def _delete_ccx_files(file_name):
     no_ext_name = file_name[:-4]
