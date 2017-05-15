@@ -34,6 +34,8 @@ Ssblk, Ssperi
 0.001, 1, 0.001, 0.01
 *BOUNDARY, AMPLITUDE=A1
 NControl, 2, 2, $amplitude
+*NODE FILE,OUTPUT=2D, ELSET=sblk.nam frequency=105
+U
 *Node print, NSET=NControl, totals=only
 RF
 *END STEP
