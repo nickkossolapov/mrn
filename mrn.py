@@ -19,7 +19,6 @@ from scipy.optimize import minimize
 from optimiser import get_plasticity, get_sum_squares
 >>>>>>> experimental
 
-<<<<<<< HEAD
 eval_counter = 0
 ccx_params = {"mid_time": 0.6, "end_disp": 0.9, "amplitude": -1.547}
 
@@ -44,6 +43,7 @@ def optimise_function(fh):
 
     ssum = get_sum_squares(disp, force, 50)
     print("K: {},\tn: {},\tSum: {}".format(fh[0],fh[1], ssum))
+<<<<<<< HEAD
 =======
 def main():
     ccx_params = {"mid_time": 0.6, "end_disp": 0.9, "amplitude": -1.549}
@@ -116,11 +116,13 @@ def _move_data(file_name):
 =======
 >>>>>>> b9ea71c4b3feac3dd9935e71544c125aeeba4a81
 >>>>>>> experimental
+=======
+>>>>>>> experimental
 
     eval_counter += 1
 
-<<<<<<< HEAD
     return ssum
+<<<<<<< HEAD
 =======
     for file in files:
         command = "del " + file
@@ -130,6 +132,8 @@ def _move_data(file_name):
 <<<<<<< HEAD
 =======
 >>>>>>> b9ea71c4b3feac3dd9935e71544c125aeeba4a81
+>>>>>>> experimental
+=======
 >>>>>>> experimental
 
 if __name__ == "__main__":
