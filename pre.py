@@ -17,7 +17,8 @@ def make_inp(file_name, stresses, strains, params):
 
     filein.close()
     fileout.close()
-    return 1
+
+    return 0
 
 
 def _parse_p_vals(stresses, strains, file_name):

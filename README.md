@@ -1,5 +1,5 @@
 # mrn
-CalculiX input files and scripts for final year engineering project.
+Software environment for final year engineering project.
 
 Project title: "Determining the stress-strain curve of aluminium using an indendation test"
 
