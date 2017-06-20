@@ -16,4 +16,13 @@
 /.matplotlib/
 /__pychache__/
 /data/
+<<<<<<< HEAD
 /n_uniqueness/
+=======
+<<<<<<< HEAD
+/n_uniqueness/
+/bConverged/
+=======
+/n_uniqueness/
+>>>>>>> b9ea71c4b3feac3dd9935e71544c125aeeba4a81
+>>>>>>> experimental
