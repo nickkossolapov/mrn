@@ -1,8 +1,18 @@
+<<<<<<< HEAD
 def get_data(file_name, params):
     """Usage: string file_name
 
     Returns: list displacements, list forces"""
 
+=======
+from simulate import make_file_name
+
+def get_data(file_number, params):
+    """Usage: int file_number, dict params
+
+    Returns: list displacements, list forces"""
+    file_name = make_file_name(file_number)
+>>>>>>> experimental
     name = file_name[:-4] + ".dat"
     fd_data_file = open("./data/" + name, "r")
 
