@@ -5,14 +5,13 @@ from simulate import run_simulation
 from scipy.optimize import minimize
 from optimiser import get_plasticity, get_sum_squares
 
-# n = [0.142] is solution!
-
 eval_counter = 0
 ccx_params = {"mid_time": 0.6, "end_disp": 0.9, "amplitude": -1.547}
 
 def main():
-    solution = minimize(optimise_function, (532, 0.142), method='Nelder-Mead', tol = 1e-6)
-    print(solution)
+    #solution = minimize(optimise_function, (532, 0.142), method='Nelder-Mead', tol = 1e-6)
+    # print(solution)
+    optimise_function([532, 0.142])
     h_exp, f_exp = get_smooth_data()
     disp, force = get_data(eval_counter-1, ccx_params)
 
@@ -31,6 +30,8 @@ def optimise_function(fh):
 
     ssum = get_sum_squares(disp, force, 50)
     print("K: {},\tn: {},\tSum: {}".format(fh[0],fh[1], ssum))
+
+    eval_counter += 1
 
 if __name__ == "__main__":
     main()
