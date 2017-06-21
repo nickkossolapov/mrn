@@ -36,12 +36,6 @@ def get_sum_squares(h, f, N, weighting):
 def _get_piecewise_ss(h_exp, f_exp, h_fem, f_fem, N):
     p_ssum = 0
 
-    if h_exp[0] > h_exp[-1]:
-        h_exp = h_exp[::-1]
-        f_exp = f_exp[::-1]
-        h_fem = h_fem[::-1]
-        f_fem = f_fem[::-1]
-
     for h in np.linspace(min(h_exp)+0.05, max(h_exp)-0.05, N):
         if h_exp[0] > h_exp[-1]:
             f1 = np.interp(h, h_exp[::-1], f_exp[::-1])
