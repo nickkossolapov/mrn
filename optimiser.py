@@ -1,13 +1,16 @@
+import logging
 import numpy as np
 from data_processor import get_smooth_data
 import matplotlib.pyplot as plt
+
+log = logging.getLogger(__name__)
 
 def get_plasticity(K, n):
     #using logarithmic strain data does funny things?
     # strains = np.geomspace(1, 2.5, 50)-1
     strains = np.linspace(0, 1.5, 50)
     stresses = K*(strains**n)
-    stresses[0] = 255 #don't forgot to modify first data point
+    stresses[0] = 255
 
     return list(stresses), list(strains)
 
@@ -24,12 +27,11 @@ def get_sum_squares(h, f, N, weighting):
     fh_exp = _split_data(h_exp, f_exp)
     fh_fem = _split_data(h, f)
 
-    ssum = _get_piecewise_ss(fh_exp[0], fh_exp[1], fh_fem[0], fh_fem[1], N//2+N%2)
-    ssum_str = "Sum of squares: ", str(ssum)[0:4], ",\t "
-    ssum += weighting*_get_piecewise_ss(fh_exp[2], fh_exp[3], fh_fem[2], fh_fem[3], N//2)
-    print(ssum_str, str(ssum)[0:4])
+    ssum1 = _get_piecewise_ss(fh_exp[0], fh_exp[1], fh_fem[0], fh_fem[1], N//2+N%2)
+    ssum2 = weighting*_get_piecewise_ss(fh_exp[2], fh_exp[3], fh_fem[2], fh_fem[3], N//2)
+    log.info("Sum of squares: %.4f,\t %.4f", ssum1, ssum2)
 
-    return ssum
+    return ssum1+ssum2
 
 def _get_piecewise_ss(h_exp, f_exp, h_fem, f_fem, N):
     p_ssum = 0

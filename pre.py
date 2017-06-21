@@ -1,4 +1,7 @@
+import logging
 from string import Template
+
+log = logging.getLogger(__name__)
 
 def make_inp(file_name, stresses, strains, params):
     """Usage: string file_name, list stresses, list strains, dict params
@@ -18,12 +21,12 @@ def make_inp(file_name, stresses, strains, params):
     filein.close()
     fileout.close()
 
-    return 0
+    return 1
 
 
 def _parse_p_vals(stresses, strains, file_name):
     if len(stresses) != len(strains):
-        print("Stresses and strains for {} don't have the same length".format(file_name))
+        log.error("Stresses and strains for %s don't have the same length", file_name)
         quit()
 
     p_string = []
