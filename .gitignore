@@ -13,4 +13,5 @@
 *.fbb
 *.pyc
 *data/
+log.txt
 /*
