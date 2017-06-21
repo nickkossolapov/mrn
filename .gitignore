@@ -13,8 +13,4 @@
 *.fbb
 *.pyc
 *data/
-/.matplotlib/
-/__pychache__/
-/data/
-/n_uniqueness/
-/bConverged/
+/*
