@@ -25,9 +25,9 @@ def get_sum_squares(h, f, N, weighting):
     fh_fem = _split_data(h, f)
 
     ssum = _get_piecewise_ss(fh_exp[0], fh_exp[1], fh_fem[0], fh_fem[1], N//2+N%2)
-    print("1: ", ssum)
+    ssum_str = "Sum of squares: ", str(ssum)[0:4], ",\t "
     ssum += weighting*_get_piecewise_ss(fh_exp[2], fh_exp[3], fh_fem[2], fh_fem[3], N//2)
-    print("2: ", ssum)
+    print(ssum_str, str(ssum)[0:4])
 
     return ssum
 
