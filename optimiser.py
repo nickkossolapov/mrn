@@ -19,7 +19,7 @@ def test_plasticity(a, b):
     h = [0, 0.1, 1.545, b, 1]
     return h, f
 
-def get_sum_squares(h, f, N, weighting):
+def get_sum_squares(h, f, N, weighting=1):
     """Usage: list h, list f, int N, float weighting
 
     Returns: float sum"""
