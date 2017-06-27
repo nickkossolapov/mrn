@@ -5,18 +5,17 @@ import matplotlib.pyplot as plt
 
 log = logging.getLogger(__name__)
 
-def get_plasticity(K, n, spacing = "lin"):
-    """Usage: float K, float n, string spacing
+def get_plasticity(K, n, N, spacing = "lin"):
+    """Usage: float K, float n, string spacing, int N
 
     Spacing is either "log" or "lin"
 
     return list stresses, list strains"""
-    
     if spacing == "lin":
-        strains = np.linspace(0, 1.5, 100)
-    
+        strains = np.linspace(0, 1.5, N)
+
     else:
-        strains = np.geomspace(1, 2.5, 50)-1
+        strains = np.geomspace(1, 2.5, N)-1
 
     stresses = K*(strains**n)
     stresses[0] = 255
@@ -28,7 +27,7 @@ def test_plasticity(a, b):
     h = [0, 0.1, 1.545, b, 1]
     return h, f
 
-def get_sum_squares(h, f, N, weighting=1):
+def get_sum_squares(h, f, N, weighting = 1):
     """Usage: list h, list f, int N, float weighting
 
     Returns: float sum"""
