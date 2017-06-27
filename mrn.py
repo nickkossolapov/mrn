@@ -18,7 +18,7 @@ def main():
     log = create_log()
     log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
 
-    solution = minimize(eval_function, (878, 0.42), method='Nelder-Mead', tol = 1e-6, args=(log))
+    solution = minimize(eval_function, (500, 0.4), method='Nelder-Mead', tol = 1e-6, args=(log))
     log.info(solution)
 
     disp, force = get_data(eval_counter-1, ccx_params)
@@ -26,7 +26,7 @@ def main():
     plt.plot(h_exp, f_exp)
     plt.plot(disp, force)
     plt.show()
-    # log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
+    log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
 
     for handler in log.handlers:
         handler.close()
