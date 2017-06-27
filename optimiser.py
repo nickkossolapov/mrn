@@ -5,10 +5,19 @@ import matplotlib.pyplot as plt
 
 log = logging.getLogger(__name__)
 
-def get_plasticity(K, n):
-    #using logarithmic strain data does funny things?
-    # strains = np.geomspace(1, 2.5, 50)-1
-    strains = np.linspace(0, 1.5, 50)
+def get_plasticity(K, n, spacing = "lin"):
+    """Usage: float K, float n, string spacing
+
+    Spacing is either "log" or "lin"
+
+    return list stresses, list strains"""
+    
+    if spacing == "lin":
+        strains = np.linspace(0, 1.5, 100)
+    
+    else:
+        strains = np.geomspace(1, 2.5, 50)-1
+
     stresses = K*(strains**n)
     stresses[0] = 255
 
