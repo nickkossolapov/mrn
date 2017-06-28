@@ -12,6 +12,7 @@
 *.csv
 *.fbb
 *.pyc
+post.fbd
 *data/
 logfile.log
 /*
