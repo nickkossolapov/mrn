@@ -1,23 +1,35 @@
 import logging
 import numpy as np
 from data_processor import get_smooth_data
+from scipy.integrate import odeint
 
 log = logging.getLogger(__name__)
 
-def get_plasticity(K, n, N, spacing = "lin"):
-    """Usage: float K, float n, string spacing, int N
+def get_plasticity(par, N, spacing = "lin"):
+    """Usage: list par, string spacing, int N
+
+    Current models:
+    2 param - S(K, n, E) : K*E^n + Sy
+    4 param - S(Sy, theta, Ss, n) : Sp' = theta(1-exp(E/Se))^n+Sy
 
     Spacing is either "log" or "lin"
 
     Returns: list stresses, list strains"""
-    yield_stress = 255
     if spacing == "lin":
         strains = np.linspace(0, 1.5, N)
 
     elif spacing == "log":
         strains = np.geomspace(1, 2.5, N)-1
 
-    stresses = K*(strains**n) + yield_stress
+    if len(par) == 2:
+        stresses = par[0]*(strains**par[1]) + 255
+
+    if len(par) == 4:
+        voce = lambda stress, strain: par[1]*(1-stress/par[2])**par[3]
+        temp_stresses = odeint(voce, 0, strains)
+        stresses = []
+        for i in temp_stresses:
+            stresses.append(i[0] + par[0])
 
     return list(stresses), list(strains)
 
