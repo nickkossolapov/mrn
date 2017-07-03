@@ -6,6 +6,9 @@ log = logging.getLogger(__name__)
 def get_data(file_name, params):
     """Usage: int file_name, dict params
 
+    params requires a dictionary containing:
+    "mid_time": float, "end_disp": float, "amplitude": float
+
     Returns: list displacements, list forces"""
     file_name = make_file_name(file_name)
     name = file_name[:-4] + ".dat"
