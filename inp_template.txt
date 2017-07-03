@@ -27,6 +27,7 @@ $plastic
 2.1e6
 *CONTACT PAIR, INTERACTION=contact, TYPE=SURFACE TO SURFACE
 Ssblk, Ssperi
+$friction
 *AMPLITUDE, NAME=A1
 0.0, 0.0, $mid_time, 1.0, 1.0, $end_disp 
 *STEP, NLGEOM, INC=5000
@@ -34,8 +35,10 @@ Ssblk, Ssperi
 0.001, 1, 0.001, 0.01
 *BOUNDARY, AMPLITUDE=A1
 NControl, 2, 2, $amplitude
-*NODE FILE,OUTPUT=2D, ELSET=sblk.nam frequency=105
+*NODE FILE,OUTPUT=2D, ELSET=sblk.nam frequency=200
 U
+*EL FILE
+S, E
 *Node print, NSET=NControl, totals=only
 RF
 *END STEP
