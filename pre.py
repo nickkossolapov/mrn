@@ -3,11 +3,14 @@ from string import Template
 
 log = logging.getLogger(__name__)
 
-def make_inp(file_name, stresses, strains, params):
-    """Usage: string file_name, list stresses, list strains, dict params
+def make_inp(file_name, stresses, strains, params, friction = 0):
+    """Usage: string file_name, list stresses, list strains, dict params, float friction
 
     params requires a dictionary containing:
-    "mid_time": float, "end_disp": float, "amplitude": float"""
+    "mid_time": float, "end_disp": float, "amplitude": float, "spring_costant": float"""
+
+    if friction != 0:
+        params['friction'] = _get_friction_string(friction, params)
 
     plastic = _parse_p_vals(stresses, strains, file_name)
     filein = open("inp_template.txt", 'r')
@@ -23,6 +26,10 @@ def make_inp(file_name, stresses, strains, params):
 
     return 1
 
+def _get_friction_string(mu, params):
+    card = "*FRICTION\n{}, {}".format(mu, params['spring_constant']/10)
+
+    return card
 
 def _parse_p_vals(stresses, strains, file_name):
     if len(stresses) != len(strains):

@@ -24,7 +24,7 @@ $plastic
 *SOLID SECTION, ELSET=Eblock, MATERIAL=aluminium
 *SURFACE INTERACTION, NAME=contact
 *SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=linear
-2.1e6
+$spring_constant
 *CONTACT PAIR, INTERACTION=contact, TYPE=SURFACE TO SURFACE
 Ssblk, Ssperi
 $friction
