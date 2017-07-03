@@ -6,15 +6,19 @@ from pre import make_inp
 
 log = logging.getLogger(__name__)
 
-def run_simulation(file_number, stresses, strains, params):
-    """Usage: int file_number, list stresses, list strains, dict params
+def run_simulation(file_number, stresses, strains, params, friction=0, make_only = False):
+    """Usage: int file_number, list stresses, list strains, dict params, friction float, make_only bool
+
+    Enable make_only to prevent execution of files
 
     Returns: no returns"""
     file_name = make_file_name(file_number)
-    make_inp(file_name, stresses, strains, params)
-    _run_ccx(file_name)
-    _move_data(file_name)
-    _delete_ccx_files(file_name)
+    make_inp(file_name, stresses, strains, params, friction)
+
+    if not make_only:
+        _run_ccx(file_name)
+        _move_data(file_name)
+        _delete_ccx_files(file_name)
 
     return 1
 
