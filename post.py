@@ -3,11 +3,11 @@ from simulate import make_file_name
 
 log = logging.getLogger(__name__)
 
-def get_data(file_number, params):
-    """Usage: int file_number, dict params
+def get_data(file_name, params):
+    """Usage: int file_name, dict params
 
     Returns: list displacements, list forces"""
-    file_name = make_file_name(file_number)
+    file_name = make_file_name(file_name)
     name = file_name[:-4] + ".dat"
     fd_data_file = open("./data/" + name, "r")
 
@@ -19,7 +19,7 @@ def get_data(file_number, params):
     disps = [_get_disp(i, amplitude, mid_time, end_disp) for i in times]
 
     if len(forces) != len(disps):
-        log.info("Forces and displacements don't have the same length in {}.".format(file_name))
+        log.info("Forces and displacements don't have the same length in %s.", file_name)
         quit()
 
     return disps, forces
