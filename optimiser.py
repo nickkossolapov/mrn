@@ -5,12 +5,16 @@ from scipy.integrate import odeint
 
 log = logging.getLogger(__name__)
 
-def get_plasticity(par, N, spacing = "lin"):
-    """Usage: list par, string spacing, int N
+def get_plasticity(par, N, method = "power", spacing = "log"):
+    """Usage: list par, int N, string method, string spacing
 
     Current models:
-    2 param - S(K, n, E) : K*E^n + Sy
-    4 param - S(Sy, theta, Ss, n) : Sp' = theta(1-exp(E/Se))^n+Sy
+    2 param - S(K, n, E) : K*E^n + Sy - "power";
+         or - S(A, B, E) : SY*(1-A*exp(BE)) - "voce";
+    4 param - S(Sy, theta, Ss, n) : Sp' = theta*(1-exp(E/Se))^n+Sy
+
+    2 params can be extended to 3 params where Sy is third parameter
+    otherwise a yield stress of 255 MPa is assumed
 
     Spacing is either "log" or "lin"
 
@@ -22,7 +26,16 @@ def get_plasticity(par, N, spacing = "lin"):
         strains = np.geomspace(1, 2.5, N)-1
 
     if len(par) == 2:
-        stresses = par[0]*(strains**par[1]) + 255
+        if method == "power":
+            stresses = par[0]*(strains**par[1]) + 255
+        elif method == "voce":
+            stresses = 255*(1-par[0]*(np.exp(par[1] * strains)))
+
+    if len(par) == 3:
+        if method == "power":
+            stresses = par[0]*(strains**par[1]) + par[2]
+        elif method == "voce":
+            stresses = par[2]*(1-par[0]*(np.exp(par[1] * strains)))
 
     if len(par) == 4:
         voce = lambda stress, strain: par[1]*(1-stress/par[2])**par[3]
