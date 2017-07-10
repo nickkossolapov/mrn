@@ -9,7 +9,7 @@ seto sphere
 pnt p1 0 radius 0
 pnt p2 0 0 0
 pnt p3 radius radius 0
-line peri p2 p3 p1 60 1.05
+line peri p2 p3 p1 60 1
 line l1 p2 p1 40 1.05
 line l2 p3 p1 20 1
 surf s1 l2 peri l1
@@ -20,16 +20,16 @@ seto block
 pnt p4 0 0 0
 valu neg -1
 valu neg_height * neg height
-swep block block tra 0 neg_height 0 80
-bia block 32
-swep block block tra width 0 0 60
+swep block block tra 0 neg_height 0 40
+bia block 256
+swep block block tra width 0 0 180
 seta lb l L003 L004
 bia block 16
 
 move all tra 0 height 0
 
 flip all
-elty all qu8c
+elty all qu4c
 mesh all
 move block tra 1e-3 0 0
 send all abq
