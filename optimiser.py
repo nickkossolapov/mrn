@@ -37,18 +37,13 @@ def get_plasticity(par, N, spacing = "log"):
 
     return list(stresses), list(strains)
 
-def test_plasticity(a, b):
-    f = [0, 0, a, 0, 0]
-    h = [0, 0.1, 1.545, b, 1]
-    return h, f
-
-def get_sum_squares(h, f, N, weighting = 1, curve = "full"):
-    """Usage: list h, list f, int N, float weighting
+def get_sum_squares(h, f, N, weighting = 1, curve = "full", scale = 1):
+    """Usage: list h, list f, int N, float weighting, float scale
 
     curve is either "full", "loading", or "unloading"
 
     Returns: float sum"""
-    h_exp, f_exp = get_smooth_data()
+    h_exp, f_exp = get_smooth_data(scale)
     fh_exp = _split_data(h_exp, f_exp)
     fh_fem = _split_data(h, f)
 
