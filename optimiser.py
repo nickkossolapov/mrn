@@ -10,9 +10,9 @@ def get_plasticity(par, N, model, spacing = "log"):
 
     Current models:
 
-    2 param - a*E^b + Sy OR (Sy/(1-a))*(1-a*exp(-b*E))
+    2 param - a x E^b + Sy OR (Sy/(1-a)) x (1-a x exp(-b x E))
 
-    4 param - Sp' = a*(1-exp(E/b))^c+d
+    4 param - Sp' = b x (1-exp(E/c))^d, a is initial yield stress
 
     2 param can be either "power" or "voce", and Sy may be included to make a 3 param model as c
 
@@ -33,9 +33,9 @@ def get_plasticity(par, N, model, spacing = "log"):
 
         if model == "power":
             stresses = par[0]*(strains**par[1]) + Sy
-   
+
         if model == "voce":
-            stresses = (Sy/(1-par[0])*(1-par[0]*np.exp(-par[1]*strains)))
+            stresses = (Sy/(1-par[0]))*(1-par[0]*np.exp(-par[1]*strains))
 
     if len(par) == 4:
         voce = lambda stress, strain: par[1]*(1-stress/par[2])**par[3]
