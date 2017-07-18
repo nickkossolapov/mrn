@@ -17,7 +17,7 @@ Ny0,2,,0
 2.1e5,0.3
 *MATERIAL,NAME=press
 *ELASTIC
-2.3e4,0.0
+$press_stiffness,0.0
 *MATERIAL, NAME=aluminium
 *ELASTIC
 7e4,0.33
@@ -39,7 +39,7 @@ $friction
 0.001, 1, 0.001, 0.01
 *BOUNDARY, AMPLITUDE=A1
 NControl, 2, 2, $amplitude
-*NODE FILE, OUTPUT=2D, frequency=200
+*NODE FILE, OUTPUT=2D
 U
 *EL FILE
 S, E
