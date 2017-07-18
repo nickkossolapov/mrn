@@ -42,9 +42,9 @@ def _parse_data(file):
 
 def _get_disp(time, amplitude, mid_time, end_disp):
     if time <= mid_time:
-        disp = time * amplitude / mid_time
+        disp = time * (amplitude / mid_time)
     elif time > mid_time:
-        disp = amplitude + (time - mid_time) * ((end_disp - amplitude)/(1 - mid_time))
+        disp = amplitude + (time - mid_time) * ((end_disp*amplitude - amplitude)/(1 - mid_time))
 
     return disp
     
