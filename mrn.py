@@ -10,16 +10,16 @@ from optimiser import get_plasticity, get_sum_squares
 
 # unscaled "amplitude": -1.547
 # 1.0834 scale: -1.669
+# 3 param voce: [0.744, 2.55, 237], end disp of 0.7
 
 eval_counter = 0
-ccx_params = {"mid_time": 0.6, "end_disp": 0.7, "amplitude": -1.669, "spring_constant": 2.1e6, "press_stiffness": 780}
-# ccx_params = {"mid_time": 0.6, "end_disp": 0.7, "amplitude": -1.547, "spring_constant": 2.1e6}
+ccx_params = {"mid_time": 0.85, "end_disp": 0.9, "amplitude": -1.669, "spring_constant": 2.1e6, "press_stiffness": 780}
 
 def main():
     log = create_log()
     log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
 
-    solution = minimize(eval_function, [0.73, 2.5, 250], args=(log), method='nelder-mead')
+    solution = minimize(eval_function, [0.7, 2.5, 250], args=(log), method='nelder-mead')
     log.info(solution)
 
     log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
