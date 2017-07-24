@@ -5,7 +5,7 @@ from scipy.integrate import odeint
 
 log = logging.getLogger(__name__)
 
-def get_plasticity(par, N, model, spacing = "log"):
+def get_plasticity(par, N, model = "voce", spacing = "log"):
     """Usage: list par, int N, string method, string spacing
 
     Current models:
