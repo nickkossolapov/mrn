@@ -28,37 +28,6 @@ def get_data(file_name, params):
 
     return disps, forces
 
-def _parse_data(file):
-    times = []
-    forces = []
-
-    for row in file:
-        temp = row.split()
-        if len(temp) == 9:
-            times.append(float(temp[-1]))
-        if len(temp) == 3:
-            forces.append(float(temp[1]) * -180)
-
-    return times, forces
-
-def _get_disp(time, amplitude, mid_time, end_disp):
-    if time <= mid_time:
-        disp = time * (amplitude / mid_time)
-    elif time > mid_time:
-        disp = amplitude + (time - mid_time) * ((end_disp*amplitude - amplitude)/(1 - mid_time))
-
-    return disp
-
-def get_loading(h, f):
-    """Usage: list h, list f, bool loading_only
-
-    Returns: list split_h, list split_f"""
-    max_ind = h.index(max(h))
-    split_h = h[:max_ind+1]
-    split_f = f[:max_ind+1]
-
-    return split_h, split_f
-
 def write_psl_data(filename, data, new_file = False):
     """Usage: string filename
 
@@ -91,3 +60,34 @@ def read_psl_data(filename):
                 break
 
     return se, fh
+
+def get_loading(h, f):
+    """Usage: list h, list f, bool loading_only
+
+    Returns: list split_h, list split_f"""
+    max_ind = h.index(max(h))
+    split_h = h[:max_ind+1]
+    split_f = f[:max_ind+1]
+
+    return split_h, split_f
+
+def _parse_data(file):
+    times = []
+    forces = []
+
+    for row in file:
+        temp = row.split()
+        if len(temp) == 9:
+            times.append(float(temp[-1]))
+        if len(temp) == 3:
+            forces.append(float(temp[1]) * -180)
+
+    return times, forces
+
+def _get_disp(time, amplitude, mid_time, end_disp):
+    if time <= mid_time:
+        disp = time * (amplitude / mid_time)
+    elif time > mid_time:
+        disp = amplitude + (time - mid_time) * ((end_disp*amplitude - amplitude)/(1 - mid_time))
+
+    return disp
