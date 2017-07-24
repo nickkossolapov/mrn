@@ -1,4 +1,5 @@
 import logging
+import pickle
 from simulate import make_file_name
 
 log = logging.getLogger(__name__)
@@ -47,4 +48,46 @@ def _get_disp(time, amplitude, mid_time, end_disp):
         disp = amplitude + (time - mid_time) * ((end_disp*amplitude - amplitude)/(1 - mid_time))
 
     return disp
-    
+
+def get_loading(h, f):
+    """Usage: list h, list f, bool loading_only
+
+    Returns: list split_h, list split_f"""
+    max_ind = h.index(max(h))
+    split_h = h[:max_ind+1]
+    split_f = f[:max_ind+1]
+
+    return split_h, split_f
+
+def write_psl_data(filename, data, new_file = False):
+    """Usage: string filename
+
+    data should be list of lists, i.e. [list se, list fh]
+
+    Returns: no returns"""
+    if not new_file:
+        with open(filename, 'ab') as fp:
+            pickle.dump(data, fp)
+    else:
+        with open(filename, 'wb') as fp:
+            pickle.dump(data, fp)
+
+    return 1
+
+def read_psl_data(filename):
+    """Usage: string filename
+
+    Returns: list se_data, list fh_data"""
+    se = []
+    fh = []
+
+    with open(filename, 'rb') as fp:
+        while True:
+            try:
+                x = pickle.load(fp)
+                se.append(x[0])
+                fh.append(x[1])
+            except EOFError:
+                break
+
+    return se, fh
