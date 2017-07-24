@@ -17,12 +17,16 @@ def get_smooth_data(scale):
 
 def _get_split_data(scale):
     split_data = [[[],[]], [[],[]]]
-    files = [open("av_loading.csv"), open("av_unloading.csv")]
-    for i in range(2):
-        reader = csv.reader(files[i], delimiter=',')
-        for row in reader:
-            split_data[i][0].append(float(row[0])*1000)
-            split_data[i][1].append(float(row[1])*scale+0.1)
+    files = [open("raw_data/av_loading.csv"), open("raw_data/av_unloading.csv")]
+    try:
+        for i in range(2):
+            reader = csv.reader(files[i], delimiter=',')
+            for row in reader:
+                split_data[i][0].append(float(row[0])*1000)
+                split_data[i][1].append(float(row[1])*scale+0.1)
+    finally:
+        for file in files:
+            file.close()
 
     return split_data[0][0], split_data[0][1], split_data[1][0], split_data[1][1]
 
@@ -30,19 +34,18 @@ def get_raw_data():
     """Usage: No inputs
 
     Returns: list h, list f"""
-    datafile = open('data.csv', 'r')
-    reader = csv.reader(datafile, delimiter=',')
-    av_h = []
-    av_f = []
+    with open('raw_data/data.csv', 'r') as datafile:
+        reader = csv.reader(datafile, delimiter=',')
+        av_h = []
+        av_f = []
 
-    first_row = True
-    for row in reader:
-        if first_row:
-            first_row = False
-            continue
+        first_row = True
+        for row in reader:
+            if first_row:
+                first_row = False
+                continue
 
-        av_h.append(float(row[-1])+0.1)
-        av_f.append(float(row[-2])*1000)
+            av_h.append(float(row[-1])+0.1)
+            av_f.append(float(row[-2])*1000)
 
-    datafile.close()
     return av_h, av_f
