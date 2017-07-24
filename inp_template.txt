@@ -36,7 +36,7 @@ $friction
 0.0, 0.0, $mid_time, 1.0, 1.0, $end_disp 
 *STEP, NLGEOM, INC=5000
 *STATIC
-0.001, 1, 0.001, 0.01
+0.01, 1, 0.001, 0.01
 *BOUNDARY, AMPLITUDE=A1
 NControl, 2, 2, $amplitude
 *NODE FILE, OUTPUT=2D
