@@ -22,10 +22,6 @@ def get_data(file_name, params):
         times, forces = _parse_data(fd_data_file)
         disps = [_get_disp(i, amplitude, mid_time, end_disp) for i in times]
 
-        if len(forces) != len(disps):
-            log.info("Forces and displacements don't have the same length in %s.", file_name)
-            quit()
-
     return disps, forces
 
 def write_psl_data(filename, data, new_file = False):
@@ -58,8 +54,8 @@ def read_psl_data(filename):
                 x = pickle.load(fp)
                 s.append(x[0])
                 e.append(x[1])
-                f.append(x[2])
-                h.append(x[3])
+                h.append(x[2])
+                f.append(x[3])
             except EOFError:
                 break
 
