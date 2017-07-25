@@ -13,32 +13,32 @@ def get_data(file_name, params):
     Returns: list displacements, list forces"""
     file_name = make_file_name(file_name)
     name = file_name[:-4] + ".dat"
-    fd_data_file = open("./data/" + name, "r")
 
-    amplitude = -params["amplitude"]
-    mid_time = params["mid_time"]
-    end_disp = params["end_disp"]
+    with open("./data/" + name, "r") as fd_data_file:
+        amplitude = -params["amplitude"]
+        mid_time = params["mid_time"]
+        end_disp = params["end_disp"]
 
-    times, forces = _parse_data(fd_data_file)
-    disps = [_get_disp(i, amplitude, mid_time, end_disp) for i in times]
+        times, forces = _parse_data(fd_data_file)
+        disps = [_get_disp(i, amplitude, mid_time, end_disp) for i in times]
 
-    if len(forces) != len(disps):
-        log.info("Forces and displacements don't have the same length in %s.", file_name)
-        quit()
+        if len(forces) != len(disps):
+            log.info("Forces and displacements don't have the same length in %s.", file_name)
+            quit()
 
     return disps, forces
 
 def write_psl_data(filename, data, new_file = False):
     """Usage: string filename
 
-    data should be list of lists, i.e. [list se, list fh]
+    data should be list of lists, i.e. [list s, list e, list h, list f]
 
     Returns: no returns"""
     if not new_file:
-        with open(filename, 'ab') as fp:
+        with open('./psl_data/' + filename, 'ab') as fp:
             pickle.dump(data, fp)
     else:
-        with open(filename, 'wb') as fp:
+        with open('./psl_data/' + filename, 'wb') as fp:
             pickle.dump(data, fp)
 
     return 1
@@ -46,20 +46,24 @@ def write_psl_data(filename, data, new_file = False):
 def read_psl_data(filename):
     """Usage: string filename
 
-    Returns: list se_data, list fh_data"""
-    se = []
-    fh = []
+    Returns: list s, list e, list h, list f"""
+    s = []
+    e = []
+    f = []
+    h = []
 
-    with open(filename, 'rb') as fp:
+    with open('./psl_data/' + filename, 'rb') as fp:
         while True:
             try:
                 x = pickle.load(fp)
-                se.append(x[0])
-                fh.append(x[1])
+                s.append(x[0])
+                e.append(x[1])
+                f.append(x[2])
+                h.append(x[3])
             except EOFError:
                 break
 
-    return se, fh
+    return s, e, h, f
 
 def get_loading(h, f):
     """Usage: list h, list f, bool loading_only
