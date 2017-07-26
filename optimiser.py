@@ -10,11 +10,21 @@ def get_plasticity(par, N, final_strain, model = "voce", spacing = "log"):
 
     Current models:
 
-    2 param - a x E^b + Sy OR (Sy/(1-a)) x (1-a x exp(-b x E))
+    1 param - Sy^(1-n) x Emod^n x (E+Ey)^n
 
-    4 param - Sp' = b x (1-exp(E/c))^d, a is initial yield stress
+    2 param - a x E^b + Sy
 
-    2 param can be either "power" or "voce", and Sy may be included to make a 3 param model as c
+    OR
+
+    (Sy/(1-a)) x (1-a x exp(-b x E))
+
+    4 param - Sp' = b x (1-E/c)^d, a is initial yield stress
+
+    OR
+
+    (Sy/(1-a)) x (1-a x exp(-b x E)) + d x E
+
+    models are "power", "voce", and "nonsat_voce"
 
     Spacing is either "log" or "lin"
 
@@ -24,6 +34,9 @@ def get_plasticity(par, N, final_strain, model = "voce", spacing = "log"):
 
     elif spacing == "log":
         strains = np.geomspace(1, final_strain, N)-1
+
+    if len(par) == 1:
+        stresses = (255**(1-par[0])) * (70000**par[0]) * ((strains - 255/70000)**par[0])
 
     if len(par) == 2 or len(par) == 3:
         if len(par) == 2:
@@ -38,11 +51,14 @@ def get_plasticity(par, N, final_strain, model = "voce", spacing = "log"):
             stresses = (Sy/(1-par[0]))*(1-par[0]*np.exp(-par[1]*strains))
 
     if len(par) == 4:
-        voce = lambda stress, strain: par[1]*(1-stress/par[2])**par[3]
-        temp_stresses = odeint(voce, 0, strains)
-        stresses = []
-        for i in temp_stresses:
-            stresses.append(i[0] + par[0])
+        if model == "nonsat_voce":
+            stresses = (Sy/(1-par[0]))*(1-par[0]*np.exp(-par[1]*strains)) + par[3]*strains
+        else:
+            voce = lambda stress, strain: par[1]*(1-stress/par[2])**par[3]
+            temp_stresses = odeint(voce, 0, strains)
+            stresses = []
+            for i in temp_stresses:
+                stresses.append(i[0] + par[0])
 
     return list(stresses), list(strains)
 
