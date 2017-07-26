@@ -1,5 +1,6 @@
 import logging
 import pickle
+import numpy as np
 from simulate import make_file_name
 
 log = logging.getLogger(__name__)
@@ -61,15 +62,46 @@ def read_psl_data(filename):
 
     return s, e, h, f
 
-def get_loading(h, f):
-    """Usage: list h, list f, bool loading_only
+def interpolate_data(h, f, N, curve = "full"):
+    """Usage: list h, list f, int N
 
-    Returns: list split_h, list split_f"""
+    curve should be "full", "loading", or "unloading".
+    Number of points in full curve is 2*N
+
+    Returns: list h, list f"""
+
+    split_data = _split_data(h, f)
+    f_loading = []
+    f_unloading = []
+    h_loading = list(np.linspace(0, max(h), N))
+    h_unloading = list(np.linspace(h[-1], max(h), N))
+
+    for i in h_loading:
+        f_loading.append(np.interp(i, split_data[0], split_data[1]))
+
+    for j in h_unloading:
+        f_unloading.append(np.interp(j, split_data[2][::-1], split_data[3][::-1]))
+
+    if curve == "loading":
+        return h_loading, f_loading
+
+    elif curve == "unloading":
+        return h_unloading, f_unloading
+
+    else:
+        h_full = h_loading + h_unloading[::-1][1:]
+        f_full = f_loading + f_unloading[::-1][1:]
+        
+        return h_full, f_full
+
+def _split_data(h, f):
+    assert len(h) == len(f)
+
     max_ind = h.index(max(h))
-    split_h = h[:max_ind+1]
-    split_f = f[:max_ind+1]
+    lo_h, lo_f = h[:max_ind+1], f[:max_ind+1]
+    un_h, un_f = h[max_ind:], f[max_ind:]
 
-    return split_h, split_f
+    return [lo_h, lo_f, un_h, un_f]
 
 def _parse_data(file):
     times = []
