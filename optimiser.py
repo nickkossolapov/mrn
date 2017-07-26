@@ -5,8 +5,8 @@ from scipy.integrate import odeint
 
 log = logging.getLogger(__name__)
 
-def get_plasticity(par, N, model = "voce", spacing = "log"):
-    """Usage: list par, int N, string method, string spacing
+def get_plasticity(par, N, final_strain, model = "voce", spacing = "log"):
+    """Usage: list par, int N, float final_strain, string model, string spacing
 
     Current models:
 
@@ -20,10 +20,10 @@ def get_plasticity(par, N, model = "voce", spacing = "log"):
 
     Returns: list stresses, list strains"""
     if spacing == "lin":
-        strains = np.linspace(0, 1.5, N)
+        strains = np.linspace(0, final_strain, N)
 
     elif spacing == "log":
-        strains = np.geomspace(1, 2.5, N)-1
+        strains = np.geomspace(1, final_strain, N)-1
 
     if len(par) == 2 or len(par) == 3:
         if len(par) == 2:
@@ -64,8 +64,7 @@ def get_sum_squares(h, f, N, curve = "loading", scale = 1, limits = (0.05, 0.05,
         ssum2 = weighting*_get_piecewise_ss(fh_exp[2], fh_exp[3], fh_fem[2], fh_fem[3], N//2, limits[2], limits[3])
 
     if log_sum and (ssum2 != None):
-            log.info("Sum of squares: %.4f,\t %.4f", ssum1, ssum2)
-
+        log.info("Sum of squares: %.4f,\t %.4f", ssum1, ssum2)
 
     if curve == "full":
         ssum = ssum1+ssum2
