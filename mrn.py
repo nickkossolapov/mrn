@@ -2,6 +2,7 @@ import datetime
 import logging
 import sys
 import matplotlib.pyplot as plt
+from os import system
 import numpy as np
 import optimiser as opt
 from data_processor import get_smooth_data
