@@ -1,7 +1,7 @@
 import logging
 import pickle
-import numpy as np
 from os import system
+import numpy as np
 from simulate import make_file_name
 
 log = logging.getLogger(__name__)
@@ -28,7 +28,19 @@ def get_data(file_num, params):
     return disps, forces
 
 class DataHandler:
-    """class to manage all data"""
+    """class to manage all data
+
+    Attributes:
+    list s
+    list e
+    list params
+    list h
+    list f
+    list h_interp
+    list f_interp
+    int interp_points
+    list end_bounds
+    str curve_type"""
 
     def __init__(self, s, e, file_num, params):
         self.s = s
@@ -41,8 +53,6 @@ class DataHandler:
         self.interp_points = None
         self.end_bounds = None
         self.curve_type = None
-
-
 
     def interpolate_data(self, N, h_pnts, curve = "full"):
         """Usage: int N, list h_points, string curve
@@ -119,14 +129,14 @@ class DataPickler:
     def __init__(self, filename, new_file = False):
         self.filename = filename
         if new_file:
-            open('./psl_data/' + filename, 'wb')
+            open('./data/' + filename, 'wb')
 
     def write_data(self, data_handler, dat_to_delete = None):
         """Usage: DataHanlder data_handler, int dat_to_delete
 
         Returns: no returns"""
 
-        with open('./psl_data/' + self.filename, 'wb') as fp:
+        with open('./data/' + self.filename, 'wb') as fp:
             pickle.dump(data_handler, fp)
 
         if isinstance(dat_to_delete, int):
