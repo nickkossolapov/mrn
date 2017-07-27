@@ -31,28 +31,44 @@ class DataHandler:
     """class to manage all data
 
     Attributes:
-    list s
-    list e
-    list params
-    list h
-    list f
-    list h_interp
-    list f_interp
-    int interp_points
-    list end_bounds
+    list stresses,
+    list strains,
+    list params,
+    list disps,
+    list forces,
+    list h_interp,
+    list f_interp,
+    int interp_points,
+    list end_bounds,
     str curve_type"""
 
-    def __init__(self, s, e, file_num, params):
-        self.s = s
-        self.e = e
+    def __init__(self, file_num, stresses, strains, params):
+        self.stresses = stresses
+        self.strains = strains
         self.params = params
-        self.h, self.f = get_data(file_num, params)
+        self.disps, self.forces = get_data(file_num, params)
 
         self.h_interp = None
         self.f_interp = None
         self.interp_points = None
         self.end_bounds = None
         self.curve_type = None
+
+    def get_data(self):
+        """Usage: no inputs
+
+        Returns list h, list f"""
+
+        return self.disps, self.forces
+
+    def get_psl_data(self):
+        """Usage: no inputs
+
+        Must be preceeded by DataHandler.interpolate_data
+
+        Returns list forces, list stresses"""
+
+        return self.forces, self.stresses
 
     def interpolate_data(self, N, h_pnts, curve = "full"):
         """Usage: int N, list h_points, string curve
@@ -69,7 +85,7 @@ class DataHandler:
         self.end_bounds = h_pnts
         self.curve_type = curve
 
-        split_data = _split_data(self.h, self.h)
+        split_data = _split_data(self.disps, self.forces)
         f_loading = []
         f_unloading = []
         h_loading = list(np.linspace(h_pnts[0], h_pnts[1], N))
@@ -128,27 +144,40 @@ class DataPickler:
 
     def __init__(self, filename, new_file = False):
         self.filename = filename
+        self._fp = None
         if new_file:
-            open('./data/' + filename, 'wb')
+            open(_get_pickle_name(filename), 'wb')
+
+    def __iter__(self):
+        self._fp = open(_get_pickle_name(self.filename), 'rb')
+        return self
+
+    def __next__(self):
+        try:
+            x = pickle.load(self._fp)
+            return x
+        except EOFError:
+            self._fp.close()
+            raise StopIteration
 
     def write_data(self, data_handler, dat_to_delete = None):
         """Usage: DataHanlder data_handler, int dat_to_delete
 
         Returns: no returns"""
 
-        with open('./data/' + self.filename, 'wb') as fp:
+        with open(_get_pickle_name(self.filename), 'wb') as fp:
             pickle.dump(data_handler, fp)
 
         if isinstance(dat_to_delete, int):
             _delete_data(dat_to_delete)
 
-    def read_data(self):
+    def get_data(self):
         """Usage: no inputs
 
         Returns: list DataHandlers"""
 
         data_handlers = []
-        with open('./psl_data/' + self.filename, 'rb') as fp:
+        with open('./data/' + self.filename, 'rb') as fp:
             while True:
                 try:
                     x = pickle.load(fp)
@@ -157,6 +186,9 @@ class DataPickler:
                     break
 
         return data_handlers
+
+def _get_pickle_name(filename):
+    return './data/' + filename + '.p'
 
 def _delete_data(file_num):
     file_name = make_file_name(file_num)
