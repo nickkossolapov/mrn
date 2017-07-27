@@ -1,9 +1,6 @@
-import logging
 import numpy as np
 from data_processor import get_smooth_data
 from scipy.integrate import odeint
-
-log = logging.getLogger(__name__)
 
 def get_plasticity(par, N, final_strain, model = "voce", spacing = "log"):
     """Usage: list par, int N, float final_strain, string model, string spacing
@@ -62,7 +59,7 @@ def get_plasticity(par, N, final_strain, model = "voce", spacing = "log"):
 
     return list(stresses), list(strains)
 
-def get_sum_squares(h, f, N, curve = "loading", scale = 1, limits = (0.05, 0.05, 0.05, 0.05) , weighting = 1, log_sum = False):
+def get_sum_squares(h, f, N, scale = 1, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
     """Usage: list h, list f, int N, float weighting, float scale, tuple limits
 
     limits is [loading upper, loading lower, unloading upper, unloading lower], where bounds are definied by min and max of data set.
@@ -76,18 +73,15 @@ def get_sum_squares(h, f, N, curve = "loading", scale = 1, limits = (0.05, 0.05,
 
     ssum1 = _get_piecewise_ss(fh_exp[0], fh_exp[1], fh_fem[0], fh_fem[1], N//2+N%2, limits[0], limits[1])
     ssum2 = None
-    if curve != "loading":
-        ssum2 = weighting*_get_piecewise_ss(fh_exp[2], fh_exp[3], fh_fem[2], fh_fem[3], N//2, limits[2], limits[3])
-
-    if log_sum and (ssum2 != None):
-        log.info("Sum of squares: %.4f,\t %.4f", ssum1, ssum2)
+    if curve in ("full", "unloading"):
+        ssum2 = _get_piecewise_ss(fh_exp[2], fh_exp[3], fh_fem[2], fh_fem[3], N//2, limits[2], limits[3])
 
     if curve == "full":
         ssum = ssum1+ssum2
-    elif curve == "loading":
-        ssum = ssum1
     elif curve == "unloading":
         ssum = ssum2
+    else:
+        ssum = ssum1
 
     return ssum
 
