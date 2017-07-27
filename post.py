@@ -62,19 +62,22 @@ def read_psl_data(filename):
 
     return s, e, h, f
 
-def interpolate_data(h, f, N, curve = "full"):
-    """Usage: list h, list f, int N
+def interpolate_data(h, f, N, h_pnts, curve = "full"):
+    """Usage: list h, list f, int N, list h_points, string curve
 
-    curve should be "full", "loading", or "unloading".
+    curve should be "full", "loading", or "unloading"
+
     Number of points in full curve is 2*N
+
+    h_pnts is [initial, max, end]
 
     Returns: list h, list f"""
 
     split_data = _split_data(h, f)
     f_loading = []
     f_unloading = []
-    h_loading = list(np.linspace(0, max(h), N))
-    h_unloading = list(np.linspace(h[-1], max(h), N))
+    h_loading = list(np.linspace(h_pnts[0], h_pnts[1], N))
+    h_unloading = list(np.linspace(h_pnts[2], h_pnts[1], N))
 
     for i in h_loading:
         f_loading.append(np.interp(i, split_data[0], split_data[1]))
@@ -91,7 +94,7 @@ def interpolate_data(h, f, N, curve = "full"):
     else:
         h_full = h_loading + h_unloading[::-1][1:]
         f_full = f_loading + f_unloading[::-1][1:]
-        
+
         return h_full, f_full
 
 def _split_data(h, f):
