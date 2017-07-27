@@ -1,18 +1,20 @@
 import logging
 import pickle
 import numpy as np
+from os import system
 from simulate import make_file_name
 
 log = logging.getLogger(__name__)
 
-def get_data(file_name, params):
+def get_data(file_num, params):
     """Usage: int file_name, dict params
 
     params requires a dictionary containing:
     "mid_time": float, "end_disp": float, "amplitude": float
 
     Returns: list displacements, list forces"""
-    file_name = make_file_name(file_name)
+
+    file_name = make_file_name(file_num)
     name = file_name[:-4] + ".dat"
 
     with open("./data/" + name, "r") as fd_data_file:
@@ -25,77 +27,61 @@ def get_data(file_name, params):
 
     return disps, forces
 
-def write_psl_data(filename, data, new_file = False):
-    """Usage: string filename
+class DataHandler:
+    """class to manage all data"""
 
-    data should be list of lists, i.e. [list s, list e, list h, list f]
+    def __init__(self, s, e, file_num, params):
+        self.s = s
+        self.e = e
+        self.params = params
+        self.h, self.f = get_data(file_num, params)
 
-    Returns: no returns"""
-    if not new_file:
-        with open('./psl_data/' + filename, 'ab') as fp:
-            pickle.dump(data, fp)
-    else:
-        with open('./psl_data/' + filename, 'wb') as fp:
-            pickle.dump(data, fp)
+        self.h_interp = None
+        self.f_interp = None
+        self.interp_points = None
+        self.end_bounds = None
+        self.curve_type = None
 
-    return 1
 
-def read_psl_data(filename):
-    """Usage: string filename
 
-    Returns: list s, list e, list h, list f"""
-    s = []
-    e = []
-    f = []
-    h = []
+    def interpolate_data(self, N, h_pnts, curve = "full"):
+        """Usage: int N, list h_points, string curve
 
-    with open('./psl_data/' + filename, 'rb') as fp:
-        while True:
-            try:
-                x = pickle.load(fp)
-                s.append(x[0])
-                e.append(x[1])
-                h.append(x[2])
-                f.append(x[3])
-            except EOFError:
-                break
+        curve should be "full", "loading", or "unloading"
 
-    return s, e, h, f
+        Number of points in full curve is 2*N
 
-def interpolate_data(h, f, N, h_pnts, curve = "full"):
-    """Usage: list h, list f, int N, list h_points, string curve
+        h_pnts is [initial, max, end]
 
-    curve should be "full", "loading", or "unloading"
+        Returns: no returns"""
 
-    Number of points in full curve is 2*N
+        self.interp_points = N
+        self.end_bounds = h_pnts
+        self.curve_type = curve
 
-    h_pnts is [initial, max, end]
+        split_data = _split_data(self.h, self.h)
+        f_loading = []
+        f_unloading = []
+        h_loading = list(np.linspace(h_pnts[0], h_pnts[1], N))
+        h_unloading = list(np.linspace(h_pnts[2], h_pnts[1], N))
 
-    Returns: list h, list f"""
+        for i in h_loading:
+            f_loading.append(np.interp(i, split_data[0], split_data[1]))
 
-    split_data = _split_data(h, f)
-    f_loading = []
-    f_unloading = []
-    h_loading = list(np.linspace(h_pnts[0], h_pnts[1], N))
-    h_unloading = list(np.linspace(h_pnts[2], h_pnts[1], N))
+        for j in h_unloading:
+            f_unloading.append(np.interp(j, split_data[2][::-1], split_data[3][::-1]))
 
-    for i in h_loading:
-        f_loading.append(np.interp(i, split_data[0], split_data[1]))
+        if curve == "loading":
+            self.h_interp = h_loading
+            self.f_interp = f_loading
 
-    for j in h_unloading:
-        f_unloading.append(np.interp(j, split_data[2][::-1], split_data[3][::-1]))
+        elif curve == "unloading":
+            self.h_interp = h_unloading
+            self.f_interp = f_unloading
 
-    if curve == "loading":
-        return h_loading, f_loading
-
-    elif curve == "unloading":
-        return h_unloading, f_unloading
-
-    else:
-        h_full = h_loading + h_unloading[::-1][1:]
-        f_full = f_loading + f_unloading[::-1][1:]
-
-        return h_full, f_full
+        else:
+            self.h_interp = h_loading + h_unloading[::-1][1:]
+            self.f_interp = f_loading + f_unloading[::-1][1:]
 
 def _split_data(h, f):
     assert len(h) == len(f)
@@ -126,3 +112,48 @@ def _get_disp(time, amplitude, mid_time, end_disp):
         disp = amplitude + (time - mid_time) * ((end_disp*amplitude - amplitude)/(1 - mid_time))
 
     return disp
+
+class DataPickler:
+    """class to read and write DataHandler files """
+
+    def __init__(self, filename, new_file = False):
+        self.filename = filename
+        if new_file:
+            open('./psl_data/' + filename, 'wb')
+
+    def write_data(self, data_handler, dat_to_delete = None):
+        """Usage: DataHanlder data_handler, int dat_to_delete
+
+        Returns: no returns"""
+
+        with open('./psl_data/' + self.filename, 'wb') as fp:
+            pickle.dump(data_handler, fp)
+
+        if isinstance(dat_to_delete, int):
+            _delete_data(dat_to_delete)
+
+    def read_data(self):
+        """Usage: no inputs
+
+        Returns: list DataHandlers"""
+
+        data_handlers = []
+        with open('./psl_data/' + self.filename, 'rb') as fp:
+            while True:
+                try:
+                    x = pickle.load(fp)
+                    data_handlers.append(x)
+                except EOFError:
+                    break
+
+        return data_handlers
+
+def _delete_data(file_num):
+    file_name = make_file_name(file_num)
+    name = file_name[:-4] + ".dat"
+
+    command = 'move {} ./data/{}'.format(name, name)
+
+    system(command)
+
+    return 1
