@@ -61,7 +61,14 @@ class DataHandler:
 
         return self.disps, self.forces
 
-    def get_psl_data(self):
+    def get_se(self):
+        """Usage: no inputs
+
+        Returns list stresses, list strains"""
+
+        return self.stresses, self.strains
+
+    def get_pls_data(self):
         """Usage: no inputs
 
         Must be preceeded by DataHandler.interpolate_data
@@ -140,13 +147,14 @@ def _get_disp(time, amplitude, mid_time, end_disp):
     return disp
 
 class DataPickler:
-    """class to read and write DataHandler files """
+    """class to read and write DataHandler files"""
 
     def __init__(self, filename, new_file = False):
         self.filename = filename
         self._fp = None
         if new_file:
-            open(_get_pickle_name(filename), 'wb')
+            file = open(_get_pickle_name(filename), 'wb')
+            file.close()
 
     def __iter__(self):
         self._fp = open(_get_pickle_name(self.filename), 'rb')
@@ -161,11 +169,11 @@ class DataPickler:
             raise StopIteration
 
     def write_data(self, data_handler, dat_to_delete = None):
-        """Usage: DataHanlder data_handler, int dat_to_delete
+        """Usage: DataHandler data_handler, int dat_to_delete
 
         Returns: no returns"""
 
-        with open(_get_pickle_name(self.filename), 'wb') as fp:
+        with open(_get_pickle_name(self.filename), 'ab') as fp:
             pickle.dump(data_handler, fp)
 
         if isinstance(dat_to_delete, int):
@@ -177,7 +185,7 @@ class DataPickler:
         Returns: list DataHandlers"""
 
         data_handlers = []
-        with open('./data/' + self.filename, 'rb') as fp:
+        with open(_get_pickle_name(self.filename), 'rb') as fp:
             while True:
                 try:
                     x = pickle.load(fp)
@@ -193,9 +201,8 @@ def _get_pickle_name(filename):
 def _delete_data(file_num):
     file_name = make_file_name(file_num)
     name = file_name[:-4] + ".dat"
-
-    command = 'move {} ./data/{}'.format(name, name)
-
+    command = "del ./data/" + name
     system(command)
+
 
     return 1
