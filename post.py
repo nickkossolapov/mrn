@@ -33,7 +33,8 @@ class DataHandler:
     Attributes:
     list stresses,
     list strains,
-    list params,
+    list model_params,
+    list ccx_params,
     list disps,
     list forces,
     list h_interp,
@@ -42,11 +43,12 @@ class DataHandler:
     list end_bounds,
     str curve_type"""
 
-    def __init__(self, file_num, stresses, strains, params):
+    def __init__(self, file_num, stresses, strains, ccx_params, model_params,):
         self.stresses = stresses
         self.strains = strains
-        self.params = params
-        self.disps, self.forces = get_data(file_num, params)
+        self.ccx_params = ccx_params
+        self.model_params = model_params
+        self.disps, self.forces = get_data(file_num, ccx_params)
 
         self.h_interp = None
         self.f_interp = None
