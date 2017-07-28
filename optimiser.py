@@ -30,7 +30,7 @@ def get_plasticity(par, N, final_strain, model = "voce", spacing = "log"):
         strains = np.linspace(0, final_strain, N)
 
     elif spacing == "log":
-        strains = np.geomspace(1, final_strain, N)-1
+        strains = np.geomspace(1, final_strain+1, N)-1
 
     if len(par) == 1:
         stresses = (255**(1-par[0])) * (70000**par[0]) * ((strains - 255/70000)**par[0])
