@@ -75,9 +75,9 @@ class DataHandler:
 
         Must be preceeded by DataHandler.interpolate_data
 
-        Returns list forces, list stresses"""
+        Returns list f_interp, list stresses"""
 
-        return self.forces, self.stresses
+        return self.f_interp, self.stresses
 
     def interpolate_data(self, N, h_pnts, curve = "full"):
         """Usage: int N, list h_points, string curve
