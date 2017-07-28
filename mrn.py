@@ -1,8 +1,8 @@
 import datetime
 import logging
 import sys
-import matplotlib.pyplot as plt
 from os import system
+import matplotlib.pyplot as plt
 import numpy as np
 import optimiser as opt
 from data_processor import get_smooth_data
@@ -21,48 +21,64 @@ eval_counter = 0
 ccx_params = {"mid_time": 0.6, "end_disp": 0.7, "amplitude": -1.669, "spring_constant": 2.1e6, "press_stiffness": 780}
 
 def main():
-    # delete_log() #<------
-
+    # delete_log() #<-------------------
     log = create_log()
     log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
-    global eval_counter
 
-    a = [0.70, 0.73, 0.76, 0.79]
-    b = [2.4, 2,5, 2.6, 2.7]
-    Sy = [220, 230, 240, 250]
+    #Optimisation
 
-    data_pickler = DataPickler('pls_test', True)
+    # solution = minimize(eval_function, [0.7, 2.5, 250], args=(log), method='nelder-mead')
+    # log.info(solution)
 
-    for i in range(4):
-        for j in range(4):
-            for k in range(4):
-                stresses, strains = opt.get_plasticity([a[i], b[j], Sy[k]], 30, 1)
-                run_simulation(eval_counter, stresses, strains, ccx_params)
-                data = DataHandler(eval_counter, stresses, strains, ccx_params)
-                data_pickler.write_data(data)
-                eval_counter += 1
+    # global eval_counter
 
-    stresses, strains = opt.get_plasticity([0.745, 2.55, 235], 30, 1)
-    run_simulation(999, stresses, strains, ccx_params)
-    # test_f, test_s = DataHandler(999, stresses, strains, ccx_params).get_psl_data()
+    # a = [0.70, 0.73, 0.76, 0.79]
+    # b = [2.4, 2,5, 2.6, 2.7]
+    # Sy = [220, 230, 240, 250]
 
-    # X = []
-    # Y = []
-    # h_pnts = [0.11, 1.65, 1.]
-    # for handler in data_pickler:
-    #     handler.interpolate_data(50, h_pnts, "loading")
-    #     x, y = handler.get_psl_data()
-    #     X.append(x)
-    #     Y.append(y)
+    # data_pickler = DataPickler('pls_test', True)
 
+    # for i in range(4):
+    #     for j in range(4):
+    #         for k in range(4):
+    #             stresses, strains = opt.get_plasticity([a[i], b[j], Sy[k]], 30, 1.5)
+    #             # run_simulation(eval_counter, stresses, strains, ccx_params)
+    #             data = DataHandler(eval_counter, stresses, strains, ccx_params)
+    #             data_pickler.write_data(data)
+    #             eval_counter += 1
 
-    # pls = PLSRegression(3)
-    # pls.fit(X, Y)
-    # Y_pred = pls.predict([test_f])
-    # plt.plot(strains, stresses)
-    # plt.plot(test_f, Y_pred[0])
-    # plt.show()
+    interp_args =  (50, [0.12, 1.66, 1.4], "full")
+    data_pickler = DataPickler('pls_test')
 
+    # stresses, strains = opt.get_plasticity([0.745, 2.55, 235], 30, 1.5)
+    # # run_simulation(999, stresses, strains, ccx_params)
+    # test_data = DataHandler(999, stresses, strains, ccx_params)
+
+    handlers = data_pickler.get_data()
+    test_data = handlers[30]
+    test_data.interpolate_data(*interp_args)
+    test_f, test_s = test_data.get_pls_data()
+    stresses, strains = test_data.get_se()
+    print(strains)
+
+    # PLS
+
+    X, Y = [], []
+
+    for handler in data_pickler:
+        handler.interpolate_data(*interp_args)
+        x, y = handler.get_pls_data()
+        if len(x) == 2*interp_args[0]:
+            X.append(x)
+            Y.append(y)
+
+    pls = PLSRegression(3)
+    pls.fit(X, Y)
+    Y_pred = pls.predict([test_f])
+    plt.plot(strains, stresses, label = "true")
+    plt.plot(strains, Y_pred[0], label = "PLS")
+    plt.legend()
+    plt.show()
 
     log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
 
@@ -76,7 +92,7 @@ def eval_function(cnst, log):
     file_num = eval_counter
     stresses, strains = opt.get_plasticity(cnst, 30, 1)
     run_simulation(file_num, stresses, strains, ccx_params, 0.5)
-    disp, force = DataHandler(999, stresses, strains, ccx_params).get_data()
+    disp, force = DataHandler(file_num, stresses, strains, ccx_params).get_data()
 
     ssum = opt.get_sum_squares(disp, force, 50, "loading", 1.0834)
 
