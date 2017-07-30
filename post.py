@@ -170,16 +170,13 @@ class DataPickler:
             self._fp.close()
             raise StopIteration
 
-    def write_data(self, data_handler, dat_to_delete = None):
+    def write_data(self, data_handler):
         """Usage: DataHandler data_handler, int dat_to_delete
 
         Returns: no returns"""
 
         with open(_get_pickle_name(self.filename), 'ab') as fp:
             pickle.dump(data_handler, fp)
-
-        if isinstance(dat_to_delete, int):
-            _delete_data(dat_to_delete)
 
     def get_data(self):
         """Usage: no inputs
@@ -199,11 +196,3 @@ class DataPickler:
 
 def _get_pickle_name(filename):
     return './data/' + filename + '.p'
-
-def _delete_data(file_num):
-    file_name = make_file_name(file_num)
-    name = file_name[:-4] + ".dat"
-    command = "del ./data/" + name
-    system(command)
-
-    return 1
