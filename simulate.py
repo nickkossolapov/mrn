@@ -25,7 +25,7 @@ def run_simulation(file_number, stresses, strains, params, friction=0, make_only
 def make_file_name(num):
     """Usage: int num
 
-    Returns string file_name"""
+    Returns: string file_name"""
     preceding_zeros = 3
     string_num = str(num)
 

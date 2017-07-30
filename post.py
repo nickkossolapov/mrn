@@ -206,5 +206,4 @@ def _delete_data(file_num):
     command = "del ./data/" + name
     system(command)
 
-
     return 1

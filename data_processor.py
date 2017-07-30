@@ -1,7 +1,7 @@
 import csv
 import scipy.signal as sgn
 
-def get_smooth_data(scale):
+def get_smooth_data(scale = 1.0834):
     """Usage: float scale
 
     Returns: list h_smooth, list f"""
