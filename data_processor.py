@@ -23,7 +23,7 @@ def _get_split_data(scale):
             reader = csv.reader(files[i], delimiter=',')
             for row in reader:
                 split_data[i][0].append(float(row[0])*1000)
-                split_data[i][1].append(float(row[1])*scale+0.1)
+                split_data[i][1].append(float(row[1])*scale+0.105)
     finally:
         for file in files:
             file.close()
@@ -49,3 +49,26 @@ def get_raw_data():
             av_f.append(float(row[-2])*1000)
 
     return av_h, av_f
+
+def get_all_data():
+    """Usage: No inputs
+    
+    Returns: list h, list f"""
+    datafile = open('raw_data/data2.csv', 'r')
+
+    reader = csv.reader(datafile, delimiter=',')
+
+    f, h = [[], [], [], [], [], [], [], []], [[], [], [], [], [], [], [], []]
+
+    first_row = True
+    for row in reader:
+        if first_row:
+            first_row = False
+            continue
+
+        for i in range(8):
+            if row[2*i] != '' and row[2*i+1] != 0:
+                f[i].append(float(row[2*i]))
+                h[i].append(float(row[2*i+1]))
+    
+    return h, f
