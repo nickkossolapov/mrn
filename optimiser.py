@@ -9,17 +9,14 @@ def build_db(domain, data_pickler, sim_handler, delete = True, reconstruct = Fal
 
     Returns: no returns"""
     for i in domain:
-        if isinstance(i[0], float) or isinstance(i[0], int):
-            index = sim_handler.get_index()
-            if not reconstruct:
-                sim_handler.run_sim(index, i)
-            data = DataHandler(index, i, sim_handler)
-            if delete:
-                data_pickler.write_data(data, index)
-            else:
-                data_pickler.write_data(data)
+        index = sim_handler.get_index()
+        if not reconstruct:
+            sim_handler.run_sim(index, i)
+        data = DataHandler(index, i, sim_handler)
+        if delete:
+            data_pickler.write_data(data, index)
         else:
-            build_db(i, data_pickler, sim_handler, delete, reconstruct)
+            data_pickler.write_data(data)
 
     return 1
 

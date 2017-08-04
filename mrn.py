@@ -11,11 +11,8 @@ from scipy.optimize import minimize
 from simulate import SimHandler
 from sklearn.cross_decomposition import PLSRegression
 
-
-# unscaled "amplitude": -1.547
-# 1.0834 scale: -1.669
-# 3 param voce w/o f: [0.744, 2.55, 237], end disp 0.7, midtime 0.6
-# 3 param voce w/ f: [0.611, 2.61, 256], end disp 0.9, midtime 0.85???
+# unscaled: -1.547
+# 1.0834 scale: -1.67
 
 eval_counter = 0
 
@@ -24,16 +21,12 @@ def main():
     log = create_log()
     log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
 
-    ccx_params = {"mid_time": 0.8, "end_disp": 0.9, "amplitude": -1.67,
+    ccx_params = {"mid_time": 0.6, "end_disp": 0.9, "amplitude": -1.67,
                   "spring_constant": 2.1e6, "press_stiffness": 860}
-    es_params = {"final_strain": 0.6, "N": 15, "model": "voce", "spacing": "log"}
-    sim_handler = SimHandler(ccx_params, es_params)
+    es_params = {"final_strain": 0.6, "N": 30, "model": "voce", "spacing": "log"}
+    sim_handler = SimHandler(ccx_params, es_params, 0.25)
 
-    sim_handler.run_sim(0, [0.62, 2.7, 255])
-    data = DataHandler(0, [0.62, 2.7, 255], sim_handler)
-    plt.plot(*data.get_data())
-    plt.plot(*get_smooth_data())
-    plt.show()
+    optimise(log, sim_handler)
 
     log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
 
@@ -58,7 +51,7 @@ def do_pls(data_pickler, test_data, interp_args):
         X.append(x)
         Y.append(param)
 
-    pls = PLSRegression(components)
+    pls = PLSRegression(3)
     pls.fit(X, Y)
     Y_pred = pls.predict([test_f])
 
@@ -69,7 +62,7 @@ def eval_function(cnst, log, data_pickler, sim_handler):
 
     sim_handler.run_sim(eval_counter, cnst)
     data = DataHandler(eval_counter, cnst, sim_handler)
-    data_pickler.write_data(data)
+    data_pickler.write_data(data, eval_counter)
     disp, force = data.get_data()
 
     ssum = opt.get_sum_squares(disp, force, 50, 1.0834)
