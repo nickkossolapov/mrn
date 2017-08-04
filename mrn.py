@@ -6,9 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import optimiser as opt
 from data_processor import get_smooth_data
-from post import DataHandler, DataPickler
+from post import DataHandler, DataPickler, get_data
 from scipy.optimize import minimize
-from simulate import run_simulation
+from simulate import SimHandler
 from sklearn.cross_decomposition import PLSRegression
 
 
@@ -18,66 +18,21 @@ from sklearn.cross_decomposition import PLSRegression
 # 3 param voce w/ f: [0.611, 2.61, 256], end disp 0.9, midtime 0.85???
 
 eval_counter = 0
-ccx_params = {"mid_time": 0.6, "end_disp": 0.7, "amplitude": -1.669, "spring_constant": 2.1e6, "press_stiffness": 780}
 
 def main():
     # delete_log() #<-------------------
     log = create_log()
     log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
 
-    #Optimisation
+    ccx_params = {"mid_time": 0.8, "end_disp": 0.9, "amplitude": -1.67,
+                  "spring_constant": 2.1e6, "press_stiffness": 860}
+    es_params = {"final_strain": 0.6, "N": 15, "model": "voce", "spacing": "log"}
+    sim_handler = SimHandler(ccx_params, es_params)
 
-    # solution = minimize(eval_function, [0.7, 2.5, 250], args=(log), method='nelder-mead')
-    # log.info(solution)
-
-    # global eval_counter
-
-    # a = [0.70, 0.73, 0.76, 0.79]
-    # b = [2.4, 2,5, 2.6, 2.7]
-    # Sy = [220, 230, 240, 250]
-
-    # data_pickler = DataPickler('pls_test', True)
-
-    # for i in range(4):
-    #     for j in range(4):
-    #         for k in range(4):
-    #             stresses, strains = opt.get_plasticity([a[i], b[j], Sy[k]], 30, 1.5)
-    #             # run_simulation(eval_counter, stresses, strains, ccx_params)
-    #             data = DataHandler(eval_counter, stresses, strains, ccx_params)
-    #             data_pickler.write_data(data)
-    #             eval_counter += 1
-
-    interp_args =  (50, [0.12, 1.66, 1.4], "full")
-    data_pickler = DataPickler('pls_test')
-
-    # stresses, strains = opt.get_plasticity([0.745, 2.55, 235], 30, 1.5)
-    # # run_simulation(999, stresses, strains, ccx_params)
-    # test_data = DataHandler(999, stresses, strains, ccx_params)
-
-    handlers = data_pickler.get_data()
-    test_data = handlers[30]
-    test_data.interpolate_data(*interp_args)
-    test_f, test_s = test_data.get_pls_data()
-    stresses, strains = test_data.get_se()
-    print(strains)
-
-    # PLS
-
-    X, Y = [], []
-
-    for handler in data_pickler:
-        handler.interpolate_data(*interp_args)
-        x, y = handler.get_pls_data()
-        if len(x) == 2*interp_args[0]:
-            X.append(x)
-            Y.append(y)
-
-    pls = PLSRegression(3)
-    pls.fit(X, Y)
-    Y_pred = pls.predict([test_f])
-    plt.plot(strains, stresses, label = "true")
-    plt.plot(strains, Y_pred[0], label = "PLS")
-    plt.legend()
+    sim_handler.run_sim(0, [0.62, 2.7, 255])
+    data = DataHandler(0, [0.62, 2.7, 255], sim_handler)
+    plt.plot(*data.get_data())
+    plt.plot(*get_smooth_data())
     plt.show()
 
     log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
@@ -86,21 +41,44 @@ def main():
         handler.close()
         log.removeFilter(handler)
 
-def eval_function(cnst, log):
+def optimise(log, sim_handler):
+    data_pickler = DataPickler('opt_3param_f', True)
+    solution = minimize(eval_function, [0.62, 2.7, 250], args=(log, data_pickler, sim_handler), method='nelder-mead')
+    log.info(solution)
+
+
+def do_pls(data_pickler, test_data, interp_args):
+    test_f, test_s = test_data.get_pls_data(*interp_args)
+
+    X, Y = [], []
+
+    for handler in data_pickler:
+        x, y = handler.get_pls_data(*interp_args)
+        param = handler.model_params
+        X.append(x)
+        Y.append(param)
+
+    pls = PLSRegression(components)
+    pls.fit(X, Y)
+    Y_pred = pls.predict([test_f])
+
+    return Y_pred
+
+def eval_function(cnst, log, data_pickler, sim_handler):
     global eval_counter
 
-    file_num = eval_counter
-    stresses, strains = opt.get_plasticity(cnst, 30, 1)
-    run_simulation(file_num, stresses, strains, ccx_params, 0.5)
-    disp, force = DataHandler(file_num, stresses, strains, ccx_params).get_data()
+    sim_handler.run_sim(eval_counter, cnst)
+    data = DataHandler(eval_counter, cnst, sim_handler)
+    data_pickler.write_data(data)
+    disp, force = data.get_data()
 
-    ssum = opt.get_sum_squares(disp, force, 50, "loading", 1.0834)
+    ssum = opt.get_sum_squares(disp, force, 50, 1.0834)
 
     logstring = ""
     for i in range(len(cnst)):
         logstring += "{:c}: {:.5f},\t".format(97+i, cnst[i])
 
-    logstring += "Sum: {:.5f}".format(ssum)
+    logstring += "Sum: {:.7f}".format(ssum)
     log.info(logstring)
 
     eval_counter += 1

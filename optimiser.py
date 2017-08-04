@@ -1,65 +1,29 @@
 import numpy as np
+from post import DataHandler
 from data_processor import get_smooth_data
-from scipy.integrate import odeint
 
-def get_plasticity(par, N, final_strain, model = "voce", spacing = "log"):
-    """Usage: list par, int N, float final_strain, string model, string spacing
+def build_db(domain, data_pickler, sim_handler, delete = True, reconstruct = False):
+    """Usage: list domain, DataPickler data_pickler, SimHanlder sim_handler, int simulate
 
-    Current models:
+    simulate should be -1 or 0
 
-    1 param - Sy^(1-n) x Emod^n x (E+Ey)^n
-
-    2 param - a x E^b + Sy
-
-    OR
-
-    (Sy/(1-a)) x (1-a x exp(-b x E))
-
-    4 param - Sp' = b x (1-E/c)^d, a is initial yield stress
-
-    OR
-
-    (Sy/(1-a)) x (1-a x exp(-b x E)) + d x E
-
-    models are "power", "voce", and "nonsat_voce"
-
-    Spacing is either "log" or "lin"
-
-    Returns: list stresses, list strains"""
-    if spacing == "lin":
-        strains = np.linspace(0, final_strain, N)
-
-    elif spacing == "log":
-        strains = np.geomspace(1, final_strain+1, N)-1
-
-    if len(par) == 1:
-        stresses = (255**(1-par[0])) * (70000**par[0]) * ((strains - 255/70000)**par[0])
-
-    if len(par) == 2 or len(par) == 3:
-        if len(par) == 2:
-            Sy = 255
+    Returns: no returns"""
+    for i in domain:
+        if isinstance(i[0], float) or isinstance(i[0], int):
+            index = sim_handler.get_index()
+            if not reconstruct:
+                sim_handler.run_sim(index, i)
+            data = DataHandler(index, i, sim_handler)
+            if delete:
+                data_pickler.write_data(data, index)
+            else:
+                data_pickler.write_data(data)
         else:
-            Sy = par[2]
+            build_db(i, data_pickler, sim_handler, delete, reconstruct)
 
-        if model == "power":
-            stresses = par[0]*(strains**par[1]) + Sy
+    return 1
 
-        if model == "voce":
-            stresses = (Sy/(1-par[0]))*(1-par[0]*np.exp(-par[1]*strains))
-
-    if len(par) == 4:
-        if model == "nonsat_voce":
-            stresses = (Sy/(1-par[0]))*(1-par[0]*np.exp(-par[1]*strains)) + par[3]*strains
-        else:
-            voce = lambda stress, strain: par[1]*(1-stress/par[2])**par[3]
-            temp_stresses = odeint(voce, 0, strains)
-            stresses = []
-            for i in temp_stresses:
-                stresses.append(i[0] + par[0])
-
-    return list(stresses), list(strains)
-
-def get_sum_squares(h, f, N, scale = 1, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
+def get_sum_squares(h, f, N, scale = 1.0834, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
     """Usage: list h, list f, int N, float weighting, float scale, tuple limits
 
     limits is [loading upper, loading lower, unloading upper, unloading lower], where bounds are definied by min and max of data set.

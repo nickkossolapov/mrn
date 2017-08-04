@@ -52,7 +52,7 @@ def get_raw_data():
 
 def get_all_data():
     """Usage: No inputs
-    
+
     Returns: list h, list f"""
     datafile = open('raw_data/data2.csv', 'r')
 
@@ -70,5 +70,5 @@ def get_all_data():
             if row[2*i] != '' and row[2*i+1] != 0:
                 f[i].append(float(row[2*i]))
                 h[i].append(float(row[2*i+1]))
-    
+
     return h, f

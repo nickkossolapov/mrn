@@ -6,14 +6,14 @@ from simulate import make_file_name
 
 log = logging.getLogger(__name__)
 
-def get_data(file_num, params):
-    """Usage: int file_name, dict params
+def get_data(file_num, sim_handler):
+    """Usage: int file_name, SimHandler sim_handler
 
     params requires a dictionary containing:
     "mid_time": float, "end_disp": float, "amplitude": float
 
     Returns: list displacements, list forces"""
-
+    params = sim_handler.get_params()
     file_name = make_file_name(file_num)
     name = file_name[:-4] + ".dat"
 
@@ -31,30 +31,13 @@ class DataHandler:
     """class to manage all data
 
     Attributes:
-    list stresses,
-    list strains,
     list model_params,
-    list ccx_params,
     list disps,
-    list forces,
-    list h_interp,
-    list f_interp,
-    int interp_points,
-    list end_bounds,
-    str curve_type"""
+    list forces"""
 
-    def __init__(self, file_num, stresses, strains, ccx_params, model_params,):
-        self.stresses = stresses
-        self.strains = strains
-        self.ccx_params = ccx_params
+    def __init__(self, file_num, model_params, sim_handler):
         self.model_params = model_params
-        self.disps, self.forces = get_data(file_num, ccx_params)
-
-        self.h_interp = None
-        self.f_interp = None
-        self.interp_points = None
-        self.end_bounds = None
-        self.curve_type = None
+        self.disps, self.forces = get_data(file_num, sim_handler)
 
     def get_data(self):
         """Usage: no inputs
@@ -63,24 +46,15 @@ class DataHandler:
 
         return self.disps, self.forces
 
-    def get_se(self):
-        """Usage: no inputs
+    def get_es(self, sim_handler):
+        """Usage: SimHandler sim_handler
 
         Returns list stresses, list strains"""
+        strains, stresses = sim_handler.get_es(self.model_params)
+        return strains, stresses
 
-        return self.stresses, self.strains
-
-    def get_pls_data(self):
-        """Usage: no inputs
-
-        Must be preceeded by DataHandler.interpolate_data
-
-        Returns list f_interp, list stresses"""
-
-        return self.f_interp, self.stresses
-
-    def interpolate_data(self, N, h_pnts, curve = "full"):
-        """Usage: int N, list h_points, string curve
+    def get_pls_data(self, sim_handler, N, h_pnts, curve = "full"):
+        """Usage: SimHandler sim_handler, int N, list h_points, string curve
 
         curve should be "full", "loading", or "unloading"
 
@@ -88,11 +62,9 @@ class DataHandler:
 
         h_pnts is [initial, max, end]
 
-        Returns: no returns"""
+        Returns: f_interp, stresses"""
 
-        self.interp_points = N
-        self.end_bounds = h_pnts
-        self.curve_type = curve
+        strains, stresses = sim_handler.get_es(self.model_params)
 
         split_data = _split_data(self.disps, self.forces)
         f_loading = []
@@ -107,16 +79,15 @@ class DataHandler:
             f_unloading.append(np.interp(j, split_data[2][::-1], split_data[3][::-1]))
 
         if curve == "loading":
-            self.h_interp = h_loading
-            self.f_interp = f_loading
+            f_interp = f_loading
 
         elif curve == "unloading":
-            self.h_interp = h_unloading
-            self.f_interp = f_unloading
+            f_interp = f_unloading
 
         else:
-            self.h_interp = h_loading + h_unloading[::-1][1:]
-            self.f_interp = f_loading + f_unloading[::-1][1:]
+            f_interp = f_loading + f_unloading[::-1][1:]
+
+        return f_interp, stresses
 
 def _split_data(h, f):
     assert len(h) == len(f)
@@ -151,12 +122,15 @@ def _get_disp(time, amplitude, mid_time, end_disp):
 class DataPickler:
     """class to read and write DataHandler files"""
 
-    def __init__(self, filename, new_file = False):
+    def __init__(self, filename, SimHandler, new_file = False):
         self.filename = filename
         self._fp = None
+
         if new_file:
             file = open(_get_pickle_name(filename), 'wb')
             file.close()
+
+        self.write_data(SimHandler)
 
     def __iter__(self):
         self._fp = open(_get_pickle_name(self.filename), 'rb')
@@ -165,7 +139,11 @@ class DataPickler:
     def __next__(self):
         try:
             x = pickle.load(self._fp)
-            return x
+            if x.__class__.__name__ == "DataHandler":
+                return x
+            else:
+                x = pickle.load(self._fp)
+                return x
         except EOFError:
             self._fp.close()
             raise StopIteration
@@ -191,11 +169,23 @@ class DataPickler:
             while True:
                 try:
                     x = pickle.load(fp)
-                    data_handlers.append(x)
+                    if x.__class__.__name__ == "DataHandler":
+                        data_handlers.append(x)
                 except EOFError:
                     break
 
         return data_handlers
+
+    def get_sim_handler(self):
+        """Usage: no inputs
+
+        """
+        with open(_get_pickle_name(self.filename), 'rb') as fp:
+            x = pickle.load(fp)
+            if x.__class__.__name__ == "SimHandler":
+                return x
+            else:
+                raise IOError("SimHandler doesn't exist in file")
 
 def _get_pickle_name(filename):
     return './data/' + filename + '.p'
