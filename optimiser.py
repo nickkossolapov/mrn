@@ -20,6 +20,27 @@ def build_db(domain, data_pickler, sim_handler, delete = True, reconstruct = Fal
 
     return 1
 
+def build_ncube(edges):
+    """Usage: list edges
+
+    Returns: list domain"""
+    domain = []
+    _recursive_build(edges, domain, [])
+    return domain
+
+def _recursive_build(edges, domain, current):
+    if len(edges[0]) == 0:
+        domain.append(current)
+    else:
+        for i in edges:
+            cut_edges = []
+            for j in edges:
+                cut_edges.append(j[1:])
+
+            temp = copy(current)
+            temp.append(i[0])
+            _recursive_build(cut_edges, domain, temp)
+
 def get_sum_squares(h, f, N, scale = 1.0834, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
     """Usage: list h, list f, int N, float weighting, float scale, tuple limits
 
