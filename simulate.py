@@ -132,8 +132,8 @@ def _delete_ccx_files(file_name):
 
 def _get_strains(N, final_strain, spacing = "log"):
     if spacing == "lin":
-        strains = np.linspace(0, final_strain**0.5, N-1)
+        strains = np.linspace(0, final_strain**0.5, N)
     elif spacing == "log":
-        strains = np.geomspace(1, final_strain**0.5+1, N-1)-1
+        strains = np.geomspace(1, final_strain**0.5+1, N)-1
 
-    return np.append(strains**2, final_strain+0.5)
+    return strains**2

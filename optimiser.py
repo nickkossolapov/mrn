@@ -1,3 +1,4 @@
+from copy import copy
 import numpy as np
 from post import DataHandler
 from data_processor import get_smooth_data
