@@ -42,7 +42,7 @@ NControl, 2, 2, $amplitude
 *NODE FILE, OUTPUT=2D
 U
 *EL FILE
-S, E
+S, E, PEEQ
 *Node print, NSET=NControl, totals=only
 RF
 *END STEP
