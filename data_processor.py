@@ -1,6 +1,36 @@
 import csv
 import scipy.signal as sgn
 
+def get_surface():
+    """Usage: No inputs
+
+    Returns: list r, list h"""
+    with open('raw_data/surface.csv', 'r') as datafile:
+        reader = csv.reader(datafile, delimiter=',')
+        r = []
+        h = []
+
+        first_row = True
+        for row in reader:
+            if first_row:
+                first_row = False
+                continue
+
+            r.append(float(row[0]))
+            h.append(float(row[1]))
+
+    return r[::-1], h[::-1]
+
+def get_smooth_surface():
+    """Usage: No inputs
+
+    Returns: list r_smooth, list h_smooth"""
+    r, h = get_surface()
+    r_smooth = sgn.savgol_filter(r, 21, 3)
+    h_smooth = sgn.savgol_filter(h, 21, 3)
+
+    return r_smooth, h_smooth
+
 def get_smooth_data(scale = 1.0834):
     """Usage: float scale
 
