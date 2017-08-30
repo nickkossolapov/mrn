@@ -22,10 +22,60 @@ def get_data(file_num, sim_handler):
         mid_time = params["mid_time"]
         end_disp = params["end_disp"]
 
-        times, forces = _parse_data(fd_data_file)
+        times, forces, nodes = _parse_data(fd_data_file)
+        radii, heights = _get_rh(nodes)
         disps = [_get_disp(i, amplitude, mid_time, end_disp) for i in times]
 
-    return disps, forces
+    return disps, forces, radii, heights
+
+def _get_rh(nodes):
+    block_r = 20.0
+    node_pos = _get_node_pos()
+
+    r = []
+    h = []
+    for i in range(len(nodes)):
+        h.append(nodes[i][1])
+        r.append(nodes[i][0] + node_pos[i])
+
+    return r, h
+
+def _get_surface_nodes():
+    with open('surface.nam') as fp:
+        nodes = []
+
+        for i, line in enumerate(fp):
+            if i == 0 or i == 1:
+                continue
+            temp = line.split(sep=',')
+            nodes.append(int(temp[0]))
+
+        nodes[1], nodes[0] = nodes[0], nodes[1]
+
+    return nodes
+
+def _get_node_pos():
+    nodes = _get_surface_nodes()
+
+    with open('all.msh') as fp:
+        node_pos_dict = {}
+
+        for i, line in enumerate(fp):
+            if i == 0:
+                continue
+            temp = line.split(sep=',')
+
+            if temp[0] == '*ELEMENT':
+                break
+
+            if int(temp[0]) in nodes:
+                node_pos_dict[temp[0].strip()] = float(temp[1])
+
+    node_pos = []
+    for i in nodes:
+        node_pos.append(node_pos_dict[str(i)])
+    
+    return node_pos
 
 class DataHandler:
     """class to manage all data
@@ -38,6 +88,7 @@ class DataHandler:
     def __init__(self, file_num, model_params, sim_handler):
         self.model_params = model_params
         self.disps, self.forces = get_data(file_num, sim_handler)
+
 
     def get_data(self):
         """Usage: no inputs
@@ -110,6 +161,7 @@ def _split_data(h, f):
 def _parse_data(file):
     times = []
     forces = []
+    nodes = []
 
     for row in file:
         temp = row.split()
@@ -118,7 +170,15 @@ def _parse_data(file):
         if len(temp) == 3:
             forces.append(float(temp[1]) * -180)
 
-    return times, forces
+        if len(temp) == 8 and abs(float(temp[7]) - 1) < 1e-6 :
+            for row in file:
+                temp = row.split()
+                if len(temp) == 4:
+                    nodes.append([float(temp[1]), float(temp[2])])
+
+    #quirk as first and second nodes are switched
+    nodes[1], nodes[0] = nodes[0], nodes[1]
+    return times, forces, nodes
 
 def _get_disp(time, amplitude, mid_time, end_disp):
     if time <= mid_time:
