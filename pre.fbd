@@ -75,3 +75,8 @@ seta control l l2
 comp control do
 comp control do
 send control abq nam
+
+seta surface l L003
+comp surface do
+comp surface do
+send surface abq nam
