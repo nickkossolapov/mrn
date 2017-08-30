@@ -4,9 +4,7 @@ from post import DataHandler
 from data_processor import get_smooth_data
 
 def build_db(domain, data_pickler, sim_handler, delete = True, reconstruct = False):
-    """Usage: list domain, DataPickler data_pickler, SimHanlder sim_handler, int simulate
-
-    simulate should be -1 or 0
+    """Usage: list domain, DataPickler data_pickler, SimHanlder sim_handler, bool delete, bool reconstruct
 
     Returns: no returns"""
     for i in domain:
@@ -42,7 +40,7 @@ def _recursive_build(edges, domain, current):
             temp.append(i[0])
             _recursive_build(cut_edges, domain, temp)
 
-def get_sum_squares(h, f, N, scale = 1.0834, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
+def get_sum_squares(h, f, h_exp, f_exp, N, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
     """Usage: list h, list f, int N, float weighting, float scale, tuple limits
 
     limits is [loading upper, loading lower, unloading upper, unloading lower], where bounds are definied by min and max of data set.
@@ -50,7 +48,6 @@ def get_sum_squares(h, f, N, scale = 1.0834, curve = "loading", limits = (0.05, 
     curve is either "full", "loading", or "unloading"
 
     Returns: float sum"""
-    h_exp, f_exp = get_smooth_data(scale)
     fh_exp = _split_data(h_exp, f_exp)
     fh_fem = _split_data(h, f)
 

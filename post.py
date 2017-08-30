@@ -46,6 +46,15 @@ class DataHandler:
 
         return self.disps, self.forces
 
+    def get_loading_data(self):
+        """Usage: no inputs
+
+        Returns list h, list f"""
+
+        split_data = _split_data(self.disps, self.forces)
+
+        return split_data[0], split_data[1]
+
     def get_es(self, sim_handler):
         """Usage: SimHandler sim_handler
 
@@ -129,8 +138,8 @@ class DataPickler:
         if new_file:
             file = open(_get_pickle_name(filename), 'wb')
             file.close()
-
-        self.write_data(SimHandler)
+            #TODO: Manage sim handler better?
+            self.write_data(SimHandler)
 
     def __iter__(self):
         self._fp = open(_get_pickle_name(self.filename), 'rb')
