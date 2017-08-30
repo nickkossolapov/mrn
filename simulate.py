@@ -35,11 +35,11 @@ class SimHandler:
         Returns: list strains, list stresses"""
         strains = _get_strains(self.N, self.final_strain, self.spacing)
         if len(par) == 1:
-            stresses = (255**(1-par[0])) * (70000**par[0]) * ((strains - 255/70000)**par[0])
+            stresses = (300**(1-par[0])) * (70000**par[0]) * ((strains - 300/70000)**par[0])
 
         if len(par) == 2 or len(par) == 3:
             if len(par) == 2:
-                Sy = 255
+                Sy = 300
             else:
                 Sy = par[2]
 
