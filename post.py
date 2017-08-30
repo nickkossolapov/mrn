@@ -29,7 +29,6 @@ def get_data(file_num, sim_handler):
     return disps, forces, radii, heights
 
 def _get_rh(nodes):
-    block_r = 20.0
     node_pos = _get_node_pos()
 
     r = []
@@ -74,7 +73,7 @@ def _get_node_pos():
     node_pos = []
     for i in nodes:
         node_pos.append(node_pos_dict[str(i)])
-    
+
     return node_pos
 
 class DataHandler:
@@ -83,11 +82,13 @@ class DataHandler:
     Attributes:
     list model_params,
     list disps,
-    list forces"""
+    list forces,
+    list radii,
+    list heights"""
 
     def __init__(self, file_num, model_params, sim_handler):
         self.model_params = model_params
-        self.disps, self.forces = get_data(file_num, sim_handler)
+        self.disps, self.forces, self.radii, self.heights = get_data(file_num, sim_handler)
 
 
     def get_data(self):
@@ -96,6 +97,13 @@ class DataHandler:
         Returns list h, list f"""
 
         return self.disps, self.forces
+
+    def get_rf(self):
+        """Usage: no inputs
+
+        Returns list h, list f"""
+
+        return self.radii, self.heights
 
     def get_loading_data(self):
         """Usage: no inputs
