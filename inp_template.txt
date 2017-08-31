@@ -7,6 +7,7 @@
 *INCLUDE, input=sphere.nam
 *INCLUDE, input=press.nam
 *INCLUDE, input=control.nam
+*INCLUDE, input=surface.nam
 
 
 *BOUNDARY
@@ -43,6 +44,8 @@ NControl, 2, 2, $amplitude
 U
 *EL FILE
 S, E, PEEQ
-*Node print, NSET=NControl, totals=only
+*NODE PRINT, NSET=NControl, totals=only
 RF
+*NODE PRINT, OUTPUT=2D, NSET=NSurface
+U
 *END STEP
