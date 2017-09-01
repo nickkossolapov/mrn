@@ -4,9 +4,6 @@ from post import DataHandler
 from data_processor import get_smooth_data
 
 def build_db(domain, data_pickler, sim_handler, delete = True, reconstruct = False):
-    """Usage: list domain, DataPickler data_pickler, SimHanlder sim_handler, bool delete, bool reconstruct
-
-    Returns: no returns"""
     for i in domain:
         index = sim_handler.get_index()
         if not reconstruct:
@@ -20,9 +17,6 @@ def build_db(domain, data_pickler, sim_handler, delete = True, reconstruct = Fal
     return 1
 
 def build_ncube(edges):
-    """Usage: list edges
-
-    Returns: list domain"""
     domain = []
     _recursive_build(edges, domain, [])
     return domain
@@ -40,14 +34,7 @@ def _recursive_build(edges, domain, current):
             temp.append(i[0])
             _recursive_build(cut_edges, domain, temp)
 
-def get_sum_squares(h, f, h_exp, f_exp, N, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
-    """Usage: list h, list f, int N, float weighting, float scale, tuple limits
-
-    limits is [loading upper, loading lower, unloading upper, unloading lower], where bounds are definied by min and max of data set.
-
-    curve is either "full", "loading", or "unloading"
-
-    Returns: float sum"""
+def get_fh_mse(h, f, h_exp, f_exp, N, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
     fh_exp = _split_data(h_exp, f_exp)
     fh_fem = _split_data(h, f)
 
@@ -64,6 +51,20 @@ def get_sum_squares(h, f, h_exp, f_exp, N, curve = "loading", limits = (0.05, 0.
         ssum = ssum1
 
     return ssum
+
+def get_rh_mse(r1, h1, r2, h2, N):
+    ssum = 0
+    for r in np.linspace(0, max(r1), N):
+        p1 = np.interp(r, r1, h1)
+        p2 = np.interp(r, r2, h2)
+        ssum += ((p2-p1)*100)**2
+    return ssum/N
+
+def get_se_mse(s1, s2):
+    ssum = 0
+    for i in range(len(s1)):
+        ssum += ((s1[i]-s2[i])/100)**2
+    return ssum/len(s1)    
 
 def _get_piecewise_ss(h_exp, f_exp, h_fem, f_fem, N, up_limit, lo_limit):
     p_ssum = 0
