@@ -90,15 +90,14 @@ class DataHandler:
         self.model_params = model_params
         self.disps, self.forces, self.radii, self.heights = get_data(file_num, sim_handler)
 
-
-    def get_data(self):
+    def get_fh(self):
         """Usage: no inputs
 
         Returns list h, list f"""
 
         return self.disps, self.forces
 
-    def get_rf(self):
+    def get_rh(self):
         """Usage: no inputs
 
         Returns list h, list f"""
@@ -178,14 +177,18 @@ def _parse_data(file):
         if len(temp) == 3:
             forces.append(float(temp[1]) * -180)
 
-        if len(temp) == 8 and abs(float(temp[7]) - 1) < 1e-6 :
+    file.seek(0)
+    for row in file:
+        temp = row.split()
+        if len(temp) == 8 and abs(float(temp[7]) - times[-1]) < 1e-6 :
             for row in file:
                 temp = row.split()
                 if len(temp) == 4:
                     nodes.append([float(temp[1]), float(temp[2])])
 
     #quirk as first and second nodes are switched
-    nodes[1], nodes[0] = nodes[0], nodes[1]
+    if len(nodes) > 2:
+        nodes[1], nodes[0] = nodes[0], nodes[1]
     return times, forces, nodes
 
 def _get_disp(time, amplitude, mid_time, end_disp):
