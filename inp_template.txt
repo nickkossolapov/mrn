@@ -42,8 +42,10 @@ $friction
 NControl, 2, 2, $amplitude
 *NODE FILE, OUTPUT=2D
 U
-*EL FILE
-S, E, PEEQ
+**
+**EL FILE
+**S, E, PEEQ
+**
 *NODE PRINT, NSET=NControl, totals=only
 RF
 *NODE PRINT, OUTPUT=2D, NSET=NSurface
