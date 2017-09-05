@@ -46,12 +46,15 @@ class SimHandler:
             if self.model == "power":
                 stresses = par[0]*(strains**par[1]) + Sy
 
+            if self.model == "power-mod":
+                stresses = par[0]*((strains - Sy/70000)**par[1]) + Sy
+
             if self.model == "voce":
                 stresses = (Sy/(1-par[0]))*(1-par[0]*np.exp(-par[1]*strains))
 
         if len(par) == 4:
-            if self.model == "nonsat_voce":
-                stresses = (Sy/(1-par[0]))*(1-par[0]*np.exp(-par[1]*strains)) + par[3]*strains
+            if self.model == "voce-nonsat":
+                stresses = (par[2]/(1-par[0]))*(1-par[0]*np.exp(-par[1]*strains)) + par[3]*strains
             else:
                 voce = lambda stress, strain: par[1]*(1-stress/par[2])**par[3]
                 temp_stresses = odeint(voce, 0, strains)
@@ -90,6 +93,7 @@ class SimHandler:
 
         Returns: int next_index"""
         return self.sim_no + 1
+
 
 def make_file_name(num):
     """Usage: int num
