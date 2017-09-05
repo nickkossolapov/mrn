@@ -60,11 +60,13 @@ def get_rh_mse(r1, h1, r2, h2, N):
         ssum += ((p2-p1)*100)**2
     return ssum/N
 
-def get_se_mse(s1, s2):
+def get_se_mse(s1, s2, e, N):
     ssum = 0
-    for i in range(len(s1)):
-        ssum += ((s1[i]-s2[i])/100)**2
-    return ssum/len(s1)    
+    for i in np.linspace(0, max(e), N):
+        p1 = np.interp(i, e, s1)
+        p2 = np.interp(i, e, s2)
+        ssum += ((p2-p1)/100)**2
+    return ssum/N
 
 def _get_piecewise_ss(h_exp, f_exp, h_fem, f_fem, N, up_limit, lo_limit):
     p_ssum = 0
