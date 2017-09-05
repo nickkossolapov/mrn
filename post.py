@@ -2,7 +2,7 @@ import logging
 import pickle
 import os
 import numpy as np
-from simulate import make_file_name
+from simulate import make_file_name, SimHandler
 
 log = logging.getLogger(__name__)
 
@@ -202,15 +202,17 @@ def _get_disp(time, amplitude, mid_time, end_disp):
 class DataPickler:
     """class to read and write DataHandler files"""
 
-    def __init__(self, filename, SimHandler, new_file = False):
+    def __init__(self, filename, SimHandler=None, new_file=False):
         self.filename = filename
         self._fp = None
 
         if new_file:
             file = open(_get_pickle_name(filename), 'wb')
             file.close()
-            #TODO: Manage sim handler better?
-            self.write_data(SimHandler)
+            if SimHandler is not None:
+                self.write_data(SimHandler)
+            else:
+                raise NotImplementedError
 
     def __iter__(self):
         self._fp = open(_get_pickle_name(self.filename), 'rb')
