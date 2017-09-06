@@ -90,6 +90,13 @@ class DataHandler:
         self.model_params = model_params
         self.disps, self.forces, self.radii, self.heights = get_data(file_num, sim_handler)
 
+    def get_params(self):
+        """Usage: no inputs
+
+        Returns list params"""
+
+        return self.model_params
+
     def get_fh(self):
         """Usage: no inputs
 
