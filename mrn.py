@@ -16,42 +16,35 @@ from sklearn.cross_decomposition import PLSRegression
 # 1.0834 scale: -1.67
 
 eval_counter = 0
-mse_data = []
 
 def main():
     # delete_log() #<-------------------
-    log = create_log()
-    log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
+    # log = create_log()
+    # log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
 
-    ccx_params = {"mid_time": 0.7, "end_disp": 0.6, "amplitude": -1.67,
-                  "spring_constant": 2.1e6, "press_stiffness": 880}
-    es_params = {"final_strain": 1, "N": 30, "model": "power", "spacing": "log"}
+    ccx_params = {"mid_time": 0.6, "end_disp": 0.7, "amplitude": -1.67,
+                  "spring_constant": 2.1e6, "press_stiffness": 820}
+    es_params = {"final_strain": 1, "N": 30, "model": "voce", "spacing": "log"}
 
-    sim_handler = SimHandler(ccx_params, es_params)
+    plt.rc('font', family='serif')
+    for i in range(6):
+        sim_handler = SimHandler(ccx_params, es_params, friction=0.1*i)
+        d, f, r, h = get_data(i, sim_handler)
+        plt.plot(d, np.array(f)/1000, label=(r'$\mu =$' + str(round(i*0.1, 2))), linewidth=1)
 
-    s_p = [[200, 0.2*100], [600, 0.6*100], [500, 0.6*100], [250, 0.3*100]]
+    plt.rc('font', family='serif')
+    plt.legend()
+    plt.ylabel(r'$\it{F} (kN)$', fontsize = 12)
+    plt.xlabel(r'$\it{h} (mm)$', fontsize = 12)
+    plt.axis([0, 1.7, -10, 50])
+    # plt.savefig("FIGURE")
+    plt.show()
 
-    mse_overall = []
-    global mse_data
+    # log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
 
-    for i in range(4):
-        pickle_name = 'opt_2power_to_nonsatvoce_nosurface' + str(i+1)
-        data_pickler = DataPickler(pickle_name, sim_handler)
-        solution = minimize(eval_function, s_p[i], args=(log, sim_handler, data_pickler), method='nelder-mead', options={'maxfev': 50})
-        log.info(solution)
-        log.info('\nMSE without surface' + str(i+1))
-        log.info(mse_data)
-        mse_overall.append(mse_data)
-        mse_data = []
-
-    log.info('\nOverall MSE without surface:')
-    log.info(mse_overall)
-
-    log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
-
-    for handler in log.handlers:
-        handler.close()
-        log.removeFilter(handler)
+    # for handler in log.handlers:
+    #     handler.close()
+    #     log.removeFilter(handler)
 
 def eval_function(cnst, log, sim_handler, data_pickler):
     global eval_counter
@@ -99,7 +92,6 @@ def eval_function(cnst, log, sim_handler, data_pickler):
     log.info('Sum: ' + str(ssum[0]))
 
     global mse_data
-    mse_data.append(ssum)
 
     eval_counter += 1
     return ssum[0]
@@ -130,11 +122,11 @@ def do_pls(data_pickler, test_data, interp_args):
     return Y_pred
 
 
-def create_log():
+def create_log(logname='logfile'):
     t_log = logging.getLogger()
     t_log.setLevel(logging.DEBUG)
 
-    fh = logging.FileHandler('logfile.log')
+    fh = logging.FileHandler(logname+'.log')
     fh.setLevel(logging.DEBUG)
     t_log.addHandler(fh)
 
@@ -144,11 +136,11 @@ def create_log():
 
     return t_log
 
-def delete_log():
-    command = "del logfile.log"
+def delete_log(logname='logfile'):
+    command = "del " + logname + ".log"
     system(command)
 
-    return 1
+    return 0
 
 if __name__ == "__main__":
     main()
