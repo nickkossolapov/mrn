@@ -31,7 +31,7 @@ def get_smooth_surface():
 
     return r_smooth, h_smooth
 
-def get_smooth_data(scale = 1.0834):
+def get_smooth_data(scale=1.0834):
     """Usage: float scale
 
     Returns: list h_smooth, list f"""
