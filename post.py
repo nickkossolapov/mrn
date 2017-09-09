@@ -187,11 +187,13 @@ def _parse_data(file):
     file.seek(0)
     for row in file:
         temp = row.split()
-        if len(temp) == 8 and abs(float(temp[7]) - times[-1]) < 1e-6 :
+        if len(temp) == 8 and abs(float(temp[7]) - times[-1]) < 1e-6 and len(nodes) == 0:
             for row in file:
                 temp = row.split()
                 if len(temp) == 4:
                     nodes.append([float(temp[1]), float(temp[2])])
+                if len(temp) == 8:
+                    break
 
     #quirk as first and second nodes are switched
     if len(nodes) > 2:
