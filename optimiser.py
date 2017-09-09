@@ -34,7 +34,7 @@ def _recursive_build(edges, domain, current):
             temp.append(i[0])
             _recursive_build(cut_edges, domain, temp)
 
-def get_fh_mse(h, f, h_exp, f_exp, N, curve = "loading", limits = (0.05, 0.05, 0.05, 0.05)):
+def get_fh_mse(h, f, h_exp, f_exp, N, curve="loading", limits=(0.05, 0.05, 0.05, 0.05)):
     fh_exp = _split_data(h_exp, f_exp)
     fh_fem = _split_data(h, f)
 
