@@ -30,9 +30,9 @@ $plastic
 *SURFACE INTERACTION, NAME=contact
 *SURFACE BEHAVIOR, PRESSURE-OVERCLOSURE=linear
 $spring_constant
+$friction
 *CONTACT PAIR, INTERACTION=contact, TYPE=SURFACE TO SURFACE
 Ssblk, Ssperi
-$friction
 *AMPLITUDE, NAME=A1
 0.0, 0.0, $mid_time, 1.0, 1.0, $end_disp 
 *STEP, NLGEOM, INC=5000
