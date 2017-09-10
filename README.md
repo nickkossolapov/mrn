@@ -1,7 +1,7 @@
 # mrn
 Software environment for final year engineering project.
 
-Project title: "Determining the stress-strain curve of aluminium using an indendation test"
+Project title: "Numerical Investigation on Methods and Models for Material Identification Using Spherical Indentation"
 
 To be used with CalculiX 2.11 (with GraphiX).
 
