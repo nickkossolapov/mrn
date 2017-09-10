@@ -6,7 +6,7 @@ from simulate import make_file_name, SimHandler
 
 log = logging.getLogger(__name__)
 
-def get_data(file_num, sim_handler):
+def get_data(file_num, sim_handler, hf_only=False):
     """Usage: int file_name, SimHandler sim_handler
 
     params requires a dictionary containing:
@@ -25,6 +25,9 @@ def get_data(file_num, sim_handler):
         times, forces, nodes = _parse_data(fd_data_file)
         radii, heights = _get_rh(nodes)
         disps = [_get_disp(i, amplitude, mid_time, end_disp) for i in times]
+
+    if hf_only:
+        return disps, forces
 
     return disps, forces, radii, heights
 
@@ -238,6 +241,9 @@ class DataPickler:
         except EOFError:
             self._fp.close()
             raise StopIteration
+
+    def __getitem__(self, key):
+        return self.get_data()[key]
 
     def write_data(self, data_handler, dat_to_delete = None):
         """Usage: DataHandler data_handler, int dat_to_delete
