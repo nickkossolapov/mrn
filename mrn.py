@@ -1,9 +1,11 @@
+import csv
 import datetime
 import logging
 import sys
 from copy import copy
 from os import system
 from random import uniform, choice
+import matplotlib.mlab as mlab
 import matplotlib.pyplot as plt
 import numpy as np
 import optimiser as opt
@@ -21,26 +23,31 @@ from pyDOE import lhs
 eval_counter = 0
 
 def main():
-    # # delete_log() #<-------------------
-    # log = create_log('log_db_lhs')
+    # delete_log() #<-------------------
+    # log = create_log('logfile')
     # log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
 
-    # ccx_params = {"mid_time": 0.7, "end_disp": 0.6, "amplitude": -1.67,
-    #               "spring_constant": 2.1e6, "press_stiffness": 880}
-    # es_params_true = {"final_strain": 1, "N": 30, "model": "voce", "spacing": "log"}
-    # sim_handler = SimHandler(ccx_params, es_params_true)
-    # data_pickler = DataPickler('db_3voce_lhs', sim_handler, True)
-
-
+    ccx_params = {"mid_time": 0.7, "end_disp": 0.6, "amplitude": -1.67,
+                  "spring_constant": 2.1e6, "press_stiffness": 820}
+    es_params = {"final_strain": 1, "N": 30, "model": "voce", "spacing": "log"}
+    sim_handler = SimHandler(ccx_params, es_params)
+    # sim_handler.run_sim(995, [0.5, 5, 350], True)
+    h_v, f_v = DataHandler(995, [0.5, 5, 350], sim_handler).get_fh()
+    # data_pickle = DataPickler('db_real_uniqueness')
 
 
 
     # log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
-
     # for handler in log.handlers:
     #     handler.close()
     #     log.removeFilter(handler)
 
+def in_range(par):
+    centre = [250, 250, 350]
+    for i in range(3):
+        if abs(par[i] - centre[i]) > 0.25*centre[i]:
+            return False
+    return True
 
 def eval_function(cnst, log, sim_handler, data_pickler):
     global eval_counter
@@ -90,42 +97,9 @@ def eval_function(cnst, log, sim_handler, data_pickler):
     eval_counter += 1
     return ssum[0]
 
-def build_even_db(log, sim_handler, data_pickler):
-    centre = np.array([0.5, 5, 350])
-    for i in np.linspace(0.75, 1.25, 6):
-        for j in np.linspace(0.75, 1.25, 6):
-            for k in np.linspace(0.75, 1.25, 6):
-                params = centre*[i, j, k]
 
-                logstring = "\n"
-                for l in range(len(params)):
-                    logstring += "{:c}: {:.5f},\t".format(97+l, params[l])
-                log.info(logstring)
-
-                sim_handler.run_sim(901, params)
-                data = DataHandler(901, params, sim_handler)
-                data_pickler.write_data(data, 901)
-
-    return 0
-
-def build_lhs_db(log, sim_handler, data_pickler):
-
-    centre = np.array([0.5, 5, 350])
-    hypercube = 0.75 + 0.5 * (np.array(lhs(3, 256)))
-
-    for i in range(len(hypercube)):
-        params = centre*hypercube[i]
-
-        logstring = "\n" + str(i) + ": "
-        for l in range(len(params)):
-            logstring += "{:c}: {:.5f},\t".format(97+l, params[l])
-        log.info(logstring)
-
-        sim_handler.run_sim(901, params)
-        data = DataHandler(901, params, sim_handler)
-        data_pickler.write_data(data, 901)
-
-    return 0
+def rbf_eval(cnst, rbfi):
+    return rbfi(*cnst)
 
 def r_param(pars):
     r_pars = []
@@ -133,30 +107,43 @@ def r_param(pars):
         r_pars.append(choice([-1, 1]) * uniform(0.3, 0.6) * par + par)
     return r_pars
 
-def build_rbf(data_pickler, target_data_handler, eps=1.3):
-    sim_handler = data_pickler.get_sim_handler()
+def build_rbf(data_pickler, h_v, f_v, eps, scale_v):
     data = data_pickler.get_data()
 
     R = []
-    X = [[] for i in range(len(data[i].get_params()))]
-
-    h_v, f_v = target_data_handler.get_fh()
-    x_v = target_data_handler.get_params()
-
+    X = [[] for i in range(len(scale_v))]
 
     for data_point in data:
         h, f = data_point.get_fh()
         R.append(opt.get_fh_mse(h, f, h_v, f_v, 50))
-        x = data_point.get_params()
+        x = copy(data_point.get_params())
+        assert len(x) == len(scale_v)
+        x *= np.array(scale_v)
         for j in range(len(X)):
             X[j].append(x[j])
 
     rbfi = Rbf(*X, R, function='gaussian', epsilon=eps)
     return rbfi
 
+def build_mixed_rbf(data_pickles, h_v, f_v, scale_v):
+    for data_pickle in data_pickles:
+        data = data_pickle.get_data()
 
-def epsilon_opt(eps, data_pickler):
-    start_time = datetime.datetime.now()
+        R = []
+        X = [[] for i in range(len(scale_v))]
+
+        for data_point in data:
+            h, f = data_point.get_fh()
+            R.append(opt.get_fh_mse(h, f, h_v, f_v, 50))
+            x = copy(data_point.get_params())
+            assert len(x) == len(scale_v)
+            x *= np.array(scale_v)
+            for j in range(len(X)):
+                X[j].append(x[j])
+
+    rbfi = Rbf(*X, R, function='gaussian')
+    return rbfi
+def epsilon_opt(eps, data_pickler, h_v, f_v, scale_v):
     sim_handler = data_pickler.get_sim_handler()
     data = data_pickler.get_data()
     error = 0
@@ -165,24 +152,25 @@ def epsilon_opt(eps, data_pickler):
         R = []
         X = [[] for i in range(len(data[i].get_params()))]
 
+        mse_true = opt.get_fh_mse(*data[i].get_fh(), h_v, f_v, 50)
+        x_v = copy(data[i].get_params())
+        if scale_v != 1:
+            x_v *= np.array(scale_v)
+
         t_data = copy(data)
         del t_data[i]
-
-        h_v, f_v = data[i].get_fh()
-        x_v = data[i].get_params()
-
 
         for data_point in t_data:
             h, f = data_point.get_fh()
             R.append(opt.get_fh_mse(h, f, h_v, f_v, 50))
-            x = data_point.get_params()
+            x = copy(data_point.get_params())
+            if scale_v != 1:
+                x *= np.array(scale_v)
             for j in range(len(X)):
                 X[j].append(x[j])
 
-        rbfi = Rbf(*X, R, function='gaussian', epsilon=eps[0])
-        error += (rbfi(*x_v))**2
-
-    print('ping!', ((datetime.datetime.now()-start_time).__str__())[:-7])
+        rbfi = Rbf(*X, R, function='gaussian', epsilon=eps)
+        error += (rbfi(*x_v)-mse_true)**2
 
     return error
 
@@ -203,6 +191,42 @@ def do_pls(data_pickler, test_data, interp_args):
 
     return Y_pred
 
+def build_even_db(log, sim_handler, data_pickler):
+    centre = np.array([0.5, 5, 350])
+    for i in np.linspace(0.75, 1.25, 6):
+        for j in np.linspace(0.75, 1.25, 6):
+            for k in np.linspace(0.75, 1.25, 6):
+                params = centre*[i, j, k]
+
+                logstring = "\n"
+                for l in range(len(params)):
+                    logstring += "{:c}: {:.5f},\t".format(97+l, params[l])
+                log.info(logstring)
+
+                sim_handler.run_sim(901, params)
+                data = DataHandler(901, params, sim_handler)
+                data_pickler.write_data(data, 901)
+
+    return 0
+
+
+def build_lhs_db(log, sim_handler, data_pickler):
+    centre = np.array([0.5, 5, 350])
+    hypercube = 0.75 + 0.5 * (np.array(lhs(3, 256)))
+
+    for i in range(len(hypercube)):
+        params = centre*hypercube[i]
+
+        logstring = "\n" + str(i) + ": "
+        for l in range(len(params)):
+            logstring += "{:c}: {:.5f},\t".format(97+l, params[l])
+        log.info(logstring)
+
+        sim_handler.run_sim(901, params)
+        data = DataHandler(901, params, sim_handler)
+        data_pickler.write_data(data, 901)
+
+    return 0
 
 def create_log(logname='logfile'):
     t_log = logging.getLogger()
@@ -223,6 +247,15 @@ def delete_log(logname='logfile'):
     system(command)
 
     return 0
+
+def get_loading(h, f):
+    assert len(h) == len(f)
+
+    max_ind = h.index(max(h))
+    lo_h, lo_f = h[:max_ind+1], f[:max_ind+1]
+    un_h, un_f = h[max_ind:], f[max_ind:]
+
+    return lo_h, lo_f
 
 if __name__ == "__main__":
     main()
