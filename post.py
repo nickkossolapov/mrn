@@ -130,7 +130,7 @@ class DataHandler:
         strains, stresses = sim_handler.get_es(self.model_params)
         return strains, stresses
 
-    def get_pls_data(self, sim_handler, N, h_pnts, curve = "full"):
+    def get_pls_data(self, sim_handler, h_pnts, e_pnts):
         """Usage: SimHandler sim_handler, int N, list h_points, string curve
 
         curve should be "full", "loading", or "unloading"
@@ -140,31 +140,17 @@ class DataHandler:
         h_pnts is [initial, max, end]
 
         Returns: f_interp, stresses"""
+        split_data = _split_data(self.disps, self.forces)
+        f_interp = []
+        for i in h_pnts:
+            f_interp.append(np.interp(i, split_data[0], split_data[1]))
 
         strains, stresses = sim_handler.get_es(self.model_params)
+        s_interp = []
+        for i in e_pnts:
+            s_interp.append(np.interp(i, strains, stresses))
 
-        split_data = _split_data(self.disps, self.forces)
-        f_loading = []
-        f_unloading = []
-        h_loading = list(np.linspace(h_pnts[0], h_pnts[1], N))
-        h_unloading = list(np.linspace(h_pnts[2], h_pnts[1], N))
-
-        for i in h_loading:
-            f_loading.append(np.interp(i, split_data[0], split_data[1]))
-
-        for j in h_unloading:
-            f_unloading.append(np.interp(j, split_data[2][::-1], split_data[3][::-1]))
-
-        if curve == "loading":
-            f_interp = f_loading
-
-        elif curve == "unloading":
-            f_interp = f_unloading
-
-        else:
-            f_interp = f_loading + f_unloading[::-1][1:]
-
-        return f_interp, stresses
+        return f_interp, s_interp
 
 def _split_data(h, f):
     assert len(h) == len(f)

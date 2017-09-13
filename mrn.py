@@ -28,12 +28,16 @@ def main():
     # log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
 
     ccx_params = {"mid_time": 0.7, "end_disp": 0.6, "amplitude": -1.67,
-                  "spring_constant": 2.1e6, "press_stiffness": 820}
+                  "spring_constant": 2.1e6, "press_stiffness": 880}
     es_params = {"final_strain": 1, "N": 30, "model": "voce", "spacing": "log"}
     sim_handler = SimHandler(ccx_params, es_params)
-    # sim_handler.run_sim(995, [0.5, 5, 350], True)
-    h_v, f_v = DataHandler(995, [0.5, 5, 350], sim_handler).get_fh()
-    # data_pickle = DataPickler('db_real_uniqueness')
+
+    data = DataHandler(995, [0.5, 5, 350], sim_handler)
+    interp_args = (np.linspace(0.1, 1.6, 50), np.linspace(0, 0.9, 20))
+    print(interp_args)
+    print(data.get_pls_data(sim_handler, *interp_args))
+    plt.plot(*data.get_fh())
+    plt.show()
 
 
 
@@ -144,7 +148,6 @@ def build_mixed_rbf(data_pickles, h_v, f_v, scale_v):
     rbfi = Rbf(*X, R, function='gaussian')
     return rbfi
 def epsilon_opt(eps, data_pickler, h_v, f_v, scale_v):
-    sim_handler = data_pickler.get_sim_handler()
     data = data_pickler.get_data()
     error = 0
 
@@ -174,22 +177,21 @@ def epsilon_opt(eps, data_pickler, h_v, f_v, scale_v):
 
     return error
 
-def do_pls(data_pickler, test_data, interp_args):
-    test_f, test_s = test_data.get_pls_data(*interp_args)
-
+def build_pls(data_pickler, sim_handler, e_pnts, h_pnts, params=False):
     X, Y = [], []
 
-    for handler in data_pickler:
-        x, y = handler.get_pls_data(*interp_args)
-        param = handler.model_params
+    for handle in data_pickler:
+        x, y = handle.get_pls_data(sim_handler, e_pnts, h_pnts)
         X.append(x)
-        Y.append(param)
+        if params:
+            Y.append(handle.get_params())
+        else:
+            Y.append(y)
 
     pls = PLSRegression(3)
     pls.fit(X, Y)
-    Y_pred = pls.predict([test_f])
 
-    return Y_pred
+    return pls
 
 def build_even_db(log, sim_handler, data_pickler):
     centre = np.array([0.5, 5, 350])
