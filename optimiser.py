@@ -60,7 +60,13 @@ def get_rh_mse(r1, h1, r2, h2, N):
         ssum += ((p2-p1)*100)**2
     return ssum/N
 
-def get_se_mse(s1, s2, e, N):
+def get_se_mse(s1, s2, e, N, bias=False):
+    if bias:
+        ssum = 0
+        for i in range(len(s1)):
+            ssum += ((s1[i]-s2[i])/100)**2
+        return ssum/len(s1)
+
     ssum = 0
     for i in np.linspace(0, max(e), N):
         p1 = np.interp(i, e, s1)
