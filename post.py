@@ -2,7 +2,8 @@ import logging
 import pickle
 import os
 import numpy as np
-from simulate import make_file_name, SimHandler
+import random
+from simulate import make_file_name
 
 log = logging.getLogger(__name__)
 
@@ -151,6 +152,46 @@ class DataHandler:
             s_interp.append(np.interp(i, strains, stresses))
 
         return f_interp, s_interp
+
+    def get_noisy_data(self, df, seed, h_bnds, sat, relative=False):
+        """Usage: float df, seed, list h_bnds, list sat
+
+        Returns list h, list f"""
+        split_data = _split_data(self.disps, self.forces)
+        h, f = split_data[0], split_data[1]
+        noisy_f = []
+        random.seed(seed)
+        for i in range(len(h)):
+            if h_bnds[0] <= h[i] <= h_bnds[1]:
+                scale = (1-np.exp(-sat[0]*(h[i]-h_bnds[0]))-np.exp(-sat[1]*(h_bnds[1]-h[i])))*(2*random.random()-1)
+                if relative:
+                    noisy_f.append(f[i] * (df * scale + 1))
+                else:
+                    noisy_f.append(f[i] + (df * scale + 1))
+            else:
+                noisy_f.append(f[i])
+
+        return split_data[0] + split_data[2], noisy_f + split_data[3]
+
+    def get_shaped_data(self, df, h_bnds, sat, relative=False):
+        """Usage: float df, list h_bnds, list sat
+
+        Returns list h, list f"""
+        split_data = _split_data(self.disps, self.forces)
+        h, f = split_data[0], split_data[1]
+        noisy_f = []
+        for i in range(len(h)):
+            if h_bnds[0] <= h[i] <= h_bnds[1]:
+                scale = (1-np.exp(-sat[0]*(h[i]-h_bnds[0]))-np.exp(-sat[1]*(h_bnds[1]-h[i])))*(np.sin((h[i]-h_bnds[0])*2*np.pi/h_bnds[1]))
+                if relative:
+                    noisy_f.append(f[i] * (df * scale + 1))
+                else:
+                    noisy_f.append(f[i] + (df * scale + 1))
+            else:
+                noisy_f.append(f[i])
+
+        return split_data[0] + split_data[2], noisy_f + split_data[3]
+
 
 def _split_data(h, f):
     assert len(h) == len(f)
