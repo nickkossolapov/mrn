@@ -2,6 +2,7 @@ import csv
 import datetime
 import logging
 import sys
+import os
 from copy import copy
 from os import system
 from random import uniform, choice
@@ -23,28 +24,24 @@ from pyDOE import lhs
 eval_counter = 0
 
 def main():
-    # delete_log() #<-------------------
-    # log = create_log('logfile')
-    # log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
-
+    # delete_log('logfile') #<-------------------
+    log = create_log('logfile')
+    log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
+    plt.rc('font', family='serif')
     ccx_params = {"mid_time": 0.7, "end_disp": 0.6, "amplitude": -1.67,
                   "spring_constant": 2.1e6, "press_stiffness": 880}
     es_params = {"final_strain": 1, "N": 30, "model": "voce", "spacing": "log"}
     sim_handler = SimHandler(ccx_params, es_params)
 
-    data = DataHandler(995, [0.5, 5, 350], sim_handler)
-    interp_args = (np.linspace(0.1, 1.6, 50), np.linspace(0, 0.9, 20))
-    print(interp_args)
-    print(data.get_pls_data(sim_handler, *interp_args))
-    plt.plot(*data.get_fh())
+    data = DataPickler('noise_3param_shape2').get_data()
+    plt.plot(*data[0].get_fh())
+    plt.plot(*data[1].get_fh())
     plt.show()
 
-
-
-    # log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
-    # for handler in log.handlers:
-    #     handler.close()
-    #     log.removeFilter(handler)
+    log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
+    for handler in log.handlers:
+        handler.close()
+        log.removeFilter(handler)
 
 def in_range(par):
     centre = [250, 250, 350]
@@ -64,10 +61,8 @@ def eval_function(cnst, log, sim_handler, data_pickler):
     if cnst[0] < 0.05:
         cnst[0] = 0.05
 
-    cnst_mod = [cnst[0], cnst[1] / 100, 400]
-
-    sim_handler.run_sim(eval_counter, cnst_mod)
-    data = DataHandler(eval_counter, cnst_mod, sim_handler)
+    sim_handler.run_sim(99, cnst)
+    data = DataHandler(99, cnst, sim_handler)
 
     if data_pickler != 1:
         data_pickler.write_data(data)
@@ -86,9 +81,9 @@ def eval_function(cnst, log, sim_handler, data_pickler):
     ssum.append(opt.get_rh_mse(r, h, r_exp, h_exp, 50))
     ssum.append(opt.get_se_mse(s, s_exp, e, 50))
 
-    logstring = "\n"
-    for i in range(len(cnst_mod)):
-        logstring += "{:c}: {:.5f},\t".format(97+i, cnst_mod[i])
+    logstring = '> ' + str(eval_counter) + "\n"
+    for i in range(len(cnst)):
+        logstring += "{:c}: {:.5f},\t".format(97+i, cnst[i])
     log.info(logstring)
 
     logstring = ""
@@ -96,10 +91,10 @@ def eval_function(cnst, log, sim_handler, data_pickler):
         logstring += "{}: {:.5f},\t".format(ssum_str[i], ssum[i])
     log.info(logstring)
 
-    log.info('Sum: ' + str(ssum[0]))
+    log.info('Sum: ' + ssum[0]*ssum[1]*(1/ssum[3]))
 
     eval_counter += 1
-    return ssum[0]
+    return ssum[0]*ssum[1]*(1/ssum[3])
 
 
 def rbf_eval(cnst, rbfi):
@@ -125,8 +120,11 @@ def build_rbf(data_pickler, h_v, f_v, eps, scale_v):
         x *= np.array(scale_v)
         for j in range(len(X)):
             X[j].append(x[j])
-
-    rbfi = Rbf(*X, R, function='gaussian', epsilon=eps)
+    
+    if eps == 0:
+        rbfi = Rbf(*X, R, function='gaussian')
+    else:
+        rbfi = Rbf(*X, R, function='gaussian', epsilon=eps)
     return rbfi
 
 def build_mixed_rbf(data_pickles, h_v, f_v, scale_v):
@@ -150,7 +148,7 @@ def build_mixed_rbf(data_pickles, h_v, f_v, scale_v):
 def epsilon_opt(eps, data_pickler, h_v, f_v, scale_v):
     data = data_pickler.get_data()
     error = 0
-
+    sys.stdout = open(os.devnull, 'w')
     for i in range(len(data)):
         R = []
         X = [[] for i in range(len(data[i].get_params()))]
@@ -174,21 +172,21 @@ def epsilon_opt(eps, data_pickler, h_v, f_v, scale_v):
 
         rbfi = Rbf(*X, R, function='gaussian', epsilon=eps)
         error += (rbfi(*x_v)-mse_true)**2
-
+    sys.stdout = sys.__stdout__
     return error
 
-def build_pls(data_pickler, sim_handler, e_pnts, h_pnts, params=False):
+def build_pls(data_pickler, sim_handler, components, h_pnts, e_pnts, params=False):
     X, Y = [], []
 
     for handle in data_pickler:
-        x, y = handle.get_pls_data(sim_handler, e_pnts, h_pnts)
+        x, y = handle.get_pls_data(sim_handler, h_pnts, e_pnts)
         X.append(x)
         if params:
             Y.append(handle.get_params())
         else:
             Y.append(y)
 
-    pls = PLSRegression(3)
+    pls = PLSRegression(components)
     pls.fit(X, Y)
 
     return pls
