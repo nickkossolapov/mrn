@@ -26,27 +26,51 @@ eval_counter = 0
 def main():
     # delete_log('logfile') #<-------------------
     log = create_log('logfile')
-    log.info("--- Program started at %s ---", datetime.datetime.now().strftime("%H:%M:%S"))
-    plt.rc('font', family='serif')
-    ccx_params = {"mid_time": 0.7, "end_disp": 0.6, "amplitude": -1.67,
-                  "spring_constant": 2.1e6, "press_stiffness": 880}
-    es_params = {"final_strain": 1, "N": 30, "model": "voce", "spacing": "log"}
-    sim_handler = SimHandler(ccx_params, es_params)
 
-    data = DataPickler('noise_3param_shape2').get_data()
-    plt.plot(*data[0].get_fh())
-    plt.plot(*data[1].get_fh())
-    plt.show()
+    uni_pickle = DataPickler('db_3voce_even')
+    lhs_pickle = DataPickler('db_3voce_lhs')
+    sim_handler = uni_pickle.get_sim_handler()
+    scale_v = np.array([500, 50, 1])
+    error = []
+
+    for data in lhs_pickle:
+        if in_range(data.get_params(), [0.5, 5, 350], 0.2):
+            h_v, f_v = data.get_fh()
+            rbfi = build_rbf(uni_pickle, h_v, f_v, 85, scale_v)
+            min_x = []
+            min_fun = 100
+            for i in range(100):
+                s_p = [uniform(200, 300), uniform(200, 300), uniform(300, 400)]
+                sol = minimize(rbf_eval, s_p, args=(rbfi), method='nelder-mead', options={'xtol':1e-4})
+                if sol.success == True and in_range(sol.x, [0.5, 5, 350]*scale_v, 0.25):
+                    if sol.fun < min_fun:
+                        min_x = [sol.x[0]/500, sol.x[1]/50, sol.x[2]]
+                        min_fun = sol.fun
+
+            if min_x:
+                e, s = sim_handler.get_es(min_x)
+                e_t, s_t = data.get_es(sim_handler)
+                error.append(opt.get_se_mse(s, s_t, e, 100, True))
+    print(error)
+
+    # plt.figure()
+    # plt.rc('font', family='serif')
+    # plt.hist(error)
+    # # plt.hist(b, np.linspace(0.375, .625, 18))
+    # # plt.axis([0.375, .625, 0, 400])
+    # plt.ylabel(r'$\it{Number}$ $\it{of}$ $\it{occurances}$', fontsize = 12)
+    # plt.xlabel(r'$\it{b}$', fontsize = 12)
+    # plt.savefig("FIGURE1")
+    # plt.show()
 
     log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
     for handler in log.handlers:
         handler.close()
         log.removeFilter(handler)
 
-def in_range(par):
-    centre = [250, 250, 350]
-    for i in range(3):
-        if abs(par[i] - centre[i]) > 0.25*centre[i]:
+def in_range(par, centre, val):
+    for i in range(len(par)):
+        if abs(par[i] - centre[i]) >= (val*centre[i]):
             return False
     return True
 
@@ -91,10 +115,10 @@ def eval_function(cnst, log, sim_handler, data_pickler):
         logstring += "{}: {:.5f},\t".format(ssum_str[i], ssum[i])
     log.info(logstring)
 
-    log.info('Sum: ' + ssum[0]*ssum[1]*(1/ssum[3]))
+    log.info('Sum: ' + str((1e6)*(ssum[0])*(ssum[1]**0.5)*(1/(ssum[2]))))
 
     eval_counter += 1
-    return ssum[0]*ssum[1]*(1/ssum[3])
+    return (1e6)*(ssum[0])*(ssum[1]**0.5)*(1/(ssum[2]))
 
 
 def rbf_eval(cnst, rbfi):
