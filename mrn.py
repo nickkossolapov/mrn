@@ -24,44 +24,15 @@ from pyDOE import lhs
 eval_counter = 0
 
 def main():
-    # delete_log('logfile') #<-------------------
+    delete_log('logfile') #<-------------------
     log = create_log('logfile')
 
-    uni_pickle = DataPickler('db_3voce_even')
-    lhs_pickle = DataPickler('db_3voce_lhs')
-    sim_handler = uni_pickle.get_sim_handler()
-    scale_v = np.array([500, 50, 1])
-    error = []
+    ccx_params = {"mid_time": 0.8, "end_disp": 0.9, "amplitude": -1.67,
+                  "spring_constant": 2.1e6, "press_stiffness": 820}
+    es_params = {"final_strain": 1, "N": 30, "model": "voce", "spacing": "log"}
+    sim_handler = SimHandler(ccx_params, es_params)
 
-    for data in lhs_pickle:
-        if in_range(data.get_params(), [0.5, 5, 350], 0.2):
-            h_v, f_v = data.get_fh()
-            rbfi = build_rbf(uni_pickle, h_v, f_v, 85, scale_v)
-            min_x = []
-            min_fun = 100
-            for i in range(100):
-                s_p = [uniform(200, 300), uniform(200, 300), uniform(300, 400)]
-                sol = minimize(rbf_eval, s_p, args=(rbfi), method='nelder-mead', options={'xtol':1e-4})
-                if sol.success == True and in_range(sol.x, [0.5, 5, 350]*scale_v, 0.25):
-                    if sol.fun < min_fun:
-                        min_x = [sol.x[0]/500, sol.x[1]/50, sol.x[2]]
-                        min_fun = sol.fun
-
-            if min_x:
-                e, s = sim_handler.get_es(min_x)
-                e_t, s_t = data.get_es(sim_handler)
-                error.append(opt.get_se_mse(s, s_t, e, 100, True))
-    print(error)
-
-    # plt.figure()
-    # plt.rc('font', family='serif')
-    # plt.hist(error)
-    # # plt.hist(b, np.linspace(0.375, .625, 18))
-    # # plt.axis([0.375, .625, 0, 400])
-    # plt.ylabel(r'$\it{Number}$ $\it{of}$ $\it{occurances}$', fontsize = 12)
-    # plt.xlabel(r'$\it{b}$', fontsize = 12)
-    # plt.savefig("FIGURE1")
-    # plt.show()
+    #code goes here
 
     log.info("\n--- Program completed at %s ---\n", datetime.datetime.now().strftime("%H:%M:%S"))
     for handler in log.handlers:
@@ -120,7 +91,6 @@ def eval_function(cnst, log, sim_handler, data_pickler):
     eval_counter += 1
     return (1e6)*(ssum[0])*(ssum[1]**0.5)*(1/(ssum[2]))
 
-
 def rbf_eval(cnst, rbfi):
     return rbfi(*cnst)
 
@@ -169,6 +139,7 @@ def build_mixed_rbf(data_pickles, h_v, f_v, scale_v):
 
     rbfi = Rbf(*X, R, function='gaussian')
     return rbfi
+
 def epsilon_opt(eps, data_pickler, h_v, f_v, scale_v):
     data = data_pickler.get_data()
     error = 0
@@ -232,7 +203,6 @@ def build_even_db(log, sim_handler, data_pickler):
                 data_pickler.write_data(data, 901)
 
     return 0
-
 
 def build_lhs_db(log, sim_handler, data_pickler):
     centre = np.array([0.5, 5, 350])
