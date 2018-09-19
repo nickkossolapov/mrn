@@ -12,14 +12,14 @@ The final report on the work was titled
 
 > Numerical Investigation on Methods and Models for Material Identification Using Spherical Indentation
 
-You can find a PDF of the report [here](https://github.com/nickkossolapov/mrn/blob/master/final_report.pdf)
+You can find a PDF of the report [here](https://github.com/nickkossolapov/mrn/blob/master/final_report.pdf).
 
 
 I also published a conference paper based on this report, published in the Proceedings of the Eleventh South African Conference on Computational and Applied Mechanics (SACAM 2018) and co-authered by Prof. Schalk Kok, titled
 
 > On the uniqueness of material identification for aluminium using spherical indentation
 
-You can find a PDF of the paper [here](https://github.com/nickkossolapov/mrn/blob/master/sacam_paper.pdf)
+You can find a PDF of the paper [here](https://github.com/nickkossolapov/mrn/blob/master/sacam_paper.pdf).
 
 
 ## Usage
