@@ -15,7 +15,7 @@ The final report on the work was titled
 You can find a PDF of the report [here](https://github.com/nickkossolapov/mrn/blob/master/final_report.pdf)
 
 
-I also published a conference paper based on this report, published in the Proceedings of the Eleventh South African Conference on Computational and Applied Mechanics (SACAM 2012) and co-authered by Prof. Schalk Kok, titled
+I also published a conference paper based on this report, published in the Proceedings of the Eleventh South African Conference on Computational and Applied Mechanics (SACAM 2018) and co-authered by Prof. Schalk Kok, titled
 
 > On the uniqueness of material identification for aluminium using spherical indentation
 
